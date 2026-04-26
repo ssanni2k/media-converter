@@ -31,7 +31,7 @@ export const config = {
     maxFileSizeMb: parseInt(env('MAX_FILE_SIZE_MB', '200')),
     maxFileSize: parseInt(env('MAX_FILE_SIZE_MB', '200')) * 1024 * 1024,
     rateLimit: {
-      max: parseInt(env('RATE_LIMIT_MAX', '10')),
+      max: parseInt(env('RATE_LIMIT_MAX', '100')),
       timeWindow: env('RATE_LIMIT_WINDOW', '1 minute'),
     },
   },
