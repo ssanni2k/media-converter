@@ -1,0 +1,14 @@
+node_modules
+.git
+.gitignore
+*.log
+*.tmp
+.env
+.env.*
+data
+redis-data
+dist
+.DS_Store
+Thumbs.db
+*.md
+!README.md

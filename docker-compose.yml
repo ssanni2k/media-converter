@@ -1,0 +1,56 @@
+name: media-processing
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - RATE_LIMIT_MAX=1000
+    depends_on:
+      - redis
+    command: node dist/api/index.js
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  worker:
+    build: .
+    volumes:
+      - ./data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - PRIORITY_HIGH_WORKERS=2
+      - PRIORITY_MEDIUM_WORKERS=1
+      - PRIORITY_LOW_WORKERS=1
+    depends_on:
+      - redis
+    command: node dist/worker/index.js
+
+  cleanup:
+    build: .
+    volumes:
+      - ./data:/app/data
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    command: node dist/cleanup/index.js
+
+volumes:
+  redis-data:

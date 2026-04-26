@@ -1,0 +1,73 @@
+export const s = {
+  root: '#root',
+  app: '.app',
+  header: '.header',
+  title: '.header__title',
+  subtitle: '.header__subtitle',
+  main: '.main',
+  converterCard: '.converter-card',
+
+  uploadZone: '.upload-zone',
+  uploadZoneInput: '.upload-zone__input',
+  uploadZoneLabel: '.upload-zone__label',
+  uploadZoneIcon: '.upload-zone__icon',
+  uploadZoneText: '.upload-zone__text',
+  uploadZoneHint: '.upload-zone__hint',
+  uploadZoneSizeLimit: '.upload-zone__size-limit',
+  uploadZoneSelected: '.upload-zone__selected',
+  uploadZoneFileIcon: '.upload-zone__file-icon',
+  uploadZoneFileName: '.upload-zone__file-name',
+  uploadZoneFileSize: '.upload-zone__file-size',
+  uploadZoneHasFile: '.upload-zone--has-file',
+  uploadZoneDragging: '.upload-zone--dragging',
+  uploadZoneDisabled: '.upload-zone--disabled',
+
+  formatSelector: '.format-selector',
+  formatSelectorLabel: '.format-selector__label',
+  formatSelectorSelect: '.format-selector__select',
+
+  actionIdle: '.action-idle',
+  actionConverting: '.action-converting',
+  convertBtn: '.convert-btn',
+
+  // Progress display (unified card for all conversion states)
+  progressDisplay: '.progress-display',
+  progressDisplayIcon: '.progress-display__icon',
+  progressDisplayLabel: '.progress-display__label',
+  progressDisplayConnectionStatus: '.progress-display__connection-status',
+  progressDisplayBar: '.progress-display__bar',
+  progressDisplayFill: '.progress-display__fill',
+  progressDisplayPercentage: '.progress-display__percentage',
+  progressDisplayQueueInfo: '.progress-display__queue-info',
+  progressDisplayError: '.progress-display__error',
+
+  // Buttons inside progress display
+  downloadBtn: '.progress-display__download-slot .download-btn',
+  cancelBtn: '.progress-display__cancel-btn',
+  reconvertBtn: '.progress-display__reconvert-btn',
+  resetBtn: '.progress-display__reset-btn',
+
+  jobHistory: '.job-history',
+  jobHistoryTitle: '.job-history__title',
+  jobHistoryClearBtn: '.job-history__clear-btn',
+  jobHistoryGrid: '.job-history__grid',
+
+  jobCard: '.job-card',
+  jobCardCompleted: '.job-card--completed',
+  jobCardFailed: '.job-card--failed',
+  jobCardWaiting: '.job-card--waiting',
+  jobCardActive: '.job-card--active',
+  jobCardFormat: '.job-card__format',
+  jobCardFileName: '.job-card__file-name',
+  jobCardRemoveBtn: '.job-card__remove-btn',
+  jobCardProgressFill: '.job-card__progress-fill',
+  jobCardProgressText: '.job-card__progress-text',
+  jobCardDownloadSlot: '.job-card__download-slot',
+  jobCardTimestamp: '.job-card__timestamp',
+
+  animatedBgCanvas: '.animated-background__canvas',
+  animatedBgToggle: '.animated-background__toggle',
+  animatedBgToggleDisabled: '.animated-background__toggle--disabled',
+
+  hidden: '.hidden',
+} as const;

@@ -1,0 +1,34 @@
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow:
+    6px 6px 12px var(--shadow-dark),
+    0 0 15px var(--accent-glow);
+}
+
+.download-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    8px 8px 16px var(--shadow-dark),
+    0 0 20px var(--accent-primary);
+}
+
+.download-btn:active {
+  transform: translateY(0) scale(0.98);
+  animation: buttonClick 150ms ease;
+}
+
+.download-btn__icon {
+  font-size: 20px;
+}

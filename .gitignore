@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Runtime data
+data/uploads/
+data/outputs/
+
+# Test results
+test-results/
+
+# Claude Code
+.claude/
+
+# Environment variables
+.env

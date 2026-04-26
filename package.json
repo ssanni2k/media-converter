@@ -1,0 +1,31 @@
+{
+  "name": "media-processing",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start:api": "node dist/api/index.js",
+    "start:worker": "node dist/worker/index.js",
+    "start:cleanup": "node dist/cleanup/index.js",
+    "dev": "tsx watch src/api/index.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^9.4.0",
+    "@fastify/rate-limit": "^10.2.0",
+    "@fastify/sensible": "^6.0.4",
+    "@fastify/static": "^9.0.0",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.0",
+    "ioredis": "^5.10.0",
+    "node-cron": "^3.0.3",
+    "pino": "^9.6.0",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
