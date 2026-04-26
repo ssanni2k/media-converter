@@ -19,11 +19,18 @@ const fastify = Fastify({
 
 await fastify.register(sensible);
 await fastify.register(cors, {
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: true,
   credentials: true,
 });
 await fastify.register(rateLimit, config.limits.rateLimit);
-await fastify.register(multipart);
+await fastify.register(multipart, {
+  limits: {
+    fileSize: config.limits.maxFileSize,
+    fieldSize: 1024 * 1024,
+    fields: 5,
+    files: 1,
+  },
+});
 
 // Serve converted files
 await fastify.register(fastifyStatic, {
