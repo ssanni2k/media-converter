@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mountFileUpload } from './FileUpload';
+import { mountFileUpload } from '../../ui/FileUpload';
 
 function createMockStore() {
   return {

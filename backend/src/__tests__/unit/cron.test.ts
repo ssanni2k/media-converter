@@ -8,7 +8,7 @@ vi.mock('node-cron', () => ({
   default: { schedule: mockSchedule },
 }));
 
-vi.mock('../shared/redis.js', () => ({
+vi.mock('../../shared/redis.js', () => ({
   default: {
     hget: vi.fn().mockResolvedValue(null),
   },
@@ -20,13 +20,13 @@ vi.mock('fs/promises', () => ({
   rm: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../config/index.js', () => ({
+vi.mock('../../config/index.js', () => ({
   config: {
     cleanup: { interval: '*/5 * * * *', maxAgeHours: 24 },
   },
 }));
 
-import { startCleanupCron } from './cron.js';
+import { startCleanupCron } from '../../cleanup/cron.js';
 
 describe('startCleanupCron', () => {
   beforeEach(() => {

@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-import { getStats, subscribeStatsChanges } from './statsApi';
-import { getLastEventSource, clearEventSources } from '../__tests__/setup';
+import { getStats, subscribeStatsChanges } from '../../api/statsApi';
+import { getLastEventSource, clearEventSources } from '../setup';
 
 describe('getStats', () => {
   beforeEach(() => {

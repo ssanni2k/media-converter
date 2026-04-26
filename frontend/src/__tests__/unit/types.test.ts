@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SUPPORTED_FORMATS, FORMAT_INFO, getCompatibleFormats } from './types';
+import { SUPPORTED_FORMATS, FORMAT_INFO, getCompatibleFormats } from '../../types';
 
 describe('SUPPORTED_FORMATS', () => {
   it('contains 16 formats', () => {

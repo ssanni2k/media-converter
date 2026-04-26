@@ -4,8 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    include: ['src/__tests__/unit/**/*.test.ts'],
     setupFiles: ['src/__tests__/setup.ts'],
-    include: ['src/**/*.test.ts'],
-    exclude: ['src/__tests__/**', '**/node_modules/**'],
   },
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { JobHistoryStore } from './JobHistoryStore';
+import { JobHistoryStore } from '../../store/JobHistoryStore';
 
 describe('JobHistoryStore', () => {
   beforeEach(() => {

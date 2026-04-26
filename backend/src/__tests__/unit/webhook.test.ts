@@ -13,17 +13,17 @@ const { mockRedis } = vi.hoisted(() => ({
   })(),
 }));
 
-vi.mock('../shared/redis.js', () => ({
+vi.mock('../../shared/redis.js', () => ({
   default: mockRedis,
 }));
 
-vi.mock('../config/index.js', () => ({
+vi.mock('../../config/index.js', () => ({
   config: {
     webhook: { maxRetries: 3, baseDelayMs: 100, timeoutMs: 5000 },
   },
 }));
 
-import { sendWebhook } from './webhook.js';
+import { sendWebhook } from '../../worker/webhook.js';
 
 describe('sendWebhook', () => {
   beforeEach(() => {

@@ -14,7 +14,7 @@ const {
   mockAbortUpload: vi.fn(),
 }));
 
-vi.mock('../api/conversionApi', () => ({
+vi.mock('../../api/conversionApi', () => ({
   startConversion: (...args: any[]) => mockApiStartConversion(...args),
   getJobStatus: (...args: any[]) => mockGetJobStatus(...args),
   createSSEConnection: (...args: any[]) => mockCreateSSEConnection(...args),
@@ -22,7 +22,7 @@ vi.mock('../api/conversionApi', () => ({
   abortUpload: () => mockAbortUpload(),
 }));
 
-vi.mock('../api/statsApi', () => ({
+vi.mock('../../api/statsApi', () => ({
   getStats: vi.fn().mockResolvedValue({
     total: 0,
     byStatus: {},
@@ -33,7 +33,7 @@ vi.mock('../api/statsApi', () => ({
   }),
 }));
 
-import { AppStore } from './AppStore';
+import { AppStore } from '../../store/AppStore';
 
 describe('AppStore', () => {
   let store: AppStore;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockChildProcess } from '../__tests__/helpers/mockChildProcess.js';
+import { createMockChildProcess } from '../helpers/mockChildProcess.js';
 
 const mockProcess = createMockChildProcess();
 const spawnMock = vi.fn(() => mockProcess);
@@ -8,7 +8,7 @@ vi.mock('child_process', () => ({
   spawn: (...args: any[]) => spawnMock(...args),
 }));
 
-import { getDuration } from './ffprobe.js';
+import { getDuration } from '../../worker/ffprobe.js';
 
 describe('getDuration', () => {
   beforeEach(() => {

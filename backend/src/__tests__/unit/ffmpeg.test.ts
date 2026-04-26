@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockChildProcess } from '../__tests__/helpers/mockChildProcess.js';
+import { createMockChildProcess } from '../helpers/mockChildProcess.js';
 
 const mockProcess = createMockChildProcess();
 const spawnMock = vi.fn(() => mockProcess);
@@ -8,11 +8,11 @@ vi.mock('child_process', () => ({
   spawn: (...args: any[]) => spawnMock(...args),
 }));
 
-vi.mock('./ffprobe.js', () => ({
+vi.mock('../../worker/ffprobe.js', () => ({
   getDuration: vi.fn().mockResolvedValue(10),
 }));
 
-import { convert, FORMAT_CODECS } from './ffmpeg.js';
+import { convert, FORMAT_CODECS } from '../../worker/ffmpeg.js';
 
 describe('FORMAT_CODECS', () => {
   it('has entries for all supported audio formats', () => {

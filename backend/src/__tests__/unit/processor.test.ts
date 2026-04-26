@@ -17,23 +17,23 @@ function createMockRedis() {
   };
 }
 
-vi.mock('../shared/redis.js', () => ({
+vi.mock('../../shared/redis.js', () => ({
   default: mockRedis,
 }));
 
-vi.mock('../shared/pubsub.js', () => ({
+vi.mock('../../shared/pubsub.js', () => ({
   publisher: { publish: vi.fn().mockResolvedValue(1) },
   PROGRESS_CHANNEL: 'job-progress',
   STATS_CHANNEL: 'stats-changed',
 }));
 
 const mockConvert = vi.fn();
-vi.mock('./ffmpeg.js', () => ({
+vi.mock('../../worker/ffmpeg.js', () => ({
   convert: (...args: any[]) => mockConvert(...args),
 }));
 
 const mockSendWebhook = vi.fn();
-vi.mock('./webhook.js', () => ({
+vi.mock('../../worker/webhook.js', () => ({
   sendWebhook: (...args: any[]) => mockSendWebhook(...args),
 }));
 
@@ -42,12 +42,12 @@ vi.mock('fs/promises', () => ({
   stat: vi.fn().mockResolvedValue({ size: 1024 }),
 }));
 
-vi.mock('../config/index.js', () => ({
+vi.mock('../../config/index.js', () => ({
   config: { redisTtlSeconds: 93600 },
 }));
 
-import { processJob, setJobStatus, getJobStatus } from './processor.js';
-import type { JobData } from '../shared/types.js';
+import { processJob, setJobStatus, getJobStatus } from '../../worker/processor.js';
+import type { JobData } from '../../shared/types.js';
 
 describe('setJobStatus', () => {
   beforeEach(() => {

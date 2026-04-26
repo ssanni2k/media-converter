@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EventEmitter } from './EventEmitter';
+import { EventEmitter } from '../../store/EventEmitter';
 
 interface TestEvents {
   'click': void;

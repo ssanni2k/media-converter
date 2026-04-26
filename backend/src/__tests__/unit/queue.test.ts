@@ -38,11 +38,11 @@ const { mockRedis } = vi.hoisted(() => {
   };
 });
 
-vi.mock('./redis.js', () => ({
+vi.mock('../../shared/redis.js', () => ({
   default: mockRedis,
 }));
 
-vi.mock('./pubsub.js', () => ({
+vi.mock('../../shared/pubsub.js', () => ({
   publisher: { publish: vi.fn().mockResolvedValue(1) },
   QUEUE_CHANNELS: {
     high: 'queue:new-job:high',
@@ -51,8 +51,8 @@ vi.mock('./pubsub.js', () => ({
   },
 }));
 
-import { addJob, getNextJob, releaseWorkerJobs, removeJob } from './queue.js';
-import type { JobData } from './types.js';
+import { addJob, getNextJob, releaseWorkerJobs, removeJob } from '../../shared/queue.js';
+import type { JobData } from '../../shared/types.js';
 
 describe('addJob', () => {
   beforeEach(() => {
@@ -83,7 +83,7 @@ describe('addJob', () => {
       format: 'mp3',
     };
 
-    const { publisher } = await import('./pubsub.js');
+    const { publisher } = await import('../../shared/pubsub.js');
     await addJob(data, 'high');
 
     expect(publisher.publish).toHaveBeenCalledWith('queue:new-job:high', '1');

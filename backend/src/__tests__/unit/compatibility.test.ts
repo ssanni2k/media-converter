@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('../worker/ffmpeg.js', () => ({
+vi.mock('../../worker/ffmpeg.js', () => ({
   FORMAT_CODECS: {
     mp3: ['-codec:a', 'libmp3lame'],
     wav: ['-codec:a', 'pcm_s16le'],
@@ -10,7 +10,7 @@ vi.mock('../worker/ffmpeg.js', () => ({
   },
 }));
 
-import { getSourceFormat, canConvert, getCompatibleFormats } from './compatibility.js';
+import { getSourceFormat, canConvert, getCompatibleFormats } from '../../shared/compatibility.js';
 
 describe('getSourceFormat', () => {
   it('extracts format from filename', () => {
