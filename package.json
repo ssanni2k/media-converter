@@ -2,8 +2,16 @@
   "name": "media-converter",
   "private": true,
   "type": "module",
-  "workspaces": ["backend", "frontend"],
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
+    "infra:up": "docker compose up -d redis",
+    "infra:down": "docker compose down",
+    "dev": "docker compose up -d redis && concurrently npm:dev:backend npm:dev:frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
     "test": "npm run test --workspaces --if-present",
     "test:unit": "npm run test:unit --workspaces --if-present",
     "test:integration": "npm run test:integration --workspaces --if-present",
@@ -15,6 +23,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",
+    "concurrently": "^9.2.1",
     "typescript": "^5.7.3"
   }
 }
