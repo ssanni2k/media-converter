@@ -207,7 +207,7 @@ frontend/src/
 - Количество задач в очереди
 - Разбивка по форматам (bar chart)
 - Последние задачи (список)
-- SSE-подписка на `GET /stats/events` для real-time обновлений
+- SSE-подписка на `GET /stats/stream` для real-time обновлений
 
 ### AnimatedBackground (`ui/AnimatedBackground.ts`)
 
@@ -228,7 +228,7 @@ Canvas-анимация с частицами-бабочками. Toggle-кно�
 | Функция | Описание |
 |---------|----------|
 | `getStats()` | GET `/stats` |
-| `createStatsSSE(onMessage, onError)` | EventSource на `/stats/events` (автореконнект каждые 3с) |
+| `subscribeStatsChanges(onChange)` | EventSource на `/stats/stream` (автореконнект каждые 3с), возвращает функцию отписки |
 
 ## Типы и форматы (`types.ts`)
 

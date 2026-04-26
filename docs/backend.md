@@ -29,7 +29,7 @@ src/
 │       ├── cancel.ts     # POST /jobs/:id/cancel
 │       ├── events.ts     # GET /events/:id (SSE)
 │       ├── stats.ts      # GET /stats
-│       └── stats-events.ts # GET /stats/events (SSE)
+│       └── stats-events.ts # GET /stats/stream (SSE)
 ├── worker/
 │   ├── index.ts          # Запуск воркеров
 │   ├── processor.ts      # Обработка задачи
@@ -54,7 +54,7 @@ src/
 
 Fastify-сервер с зарегистрированными плагинами:
 - `@fastify/cors` — CORS для `localhost:5173` и `localhost:3000`
-- `@fastify/rate-limit` — ограничение запросов (10/мин по умолчанию)
+- `@fastify/rate-limit` — ограничение запросов (100/мин по умолчанию)
 - `@fastify/multipart` — приём multipart/form-data загрузок
 - `@fastify/static` — раздача файлов из `data/outputs/`
 - `@fastify/sensible` — утилиты HTTP-ответов
@@ -96,15 +96,16 @@ Server-Sent Events для real-time прогресса:
 ### GET /stats (`routes/stats.ts`)
 
 Агрегация статистики с кэшированием на 5 секунд. Вычисляет:
-- Общее количество задач и разбивка по статусам
-- Количество задач в очереди (waiting + active)
-- Среднее время обработки (из последних 20 завершённых)
-- Разбивка по целевым форматам
-- Список последних 50 задач
+- Общее количество задач (`total`)
+- Разбивка по статусам (`byStatus`: completed, failed, active, waiting)
+- Количество задач в очереди (`queueCount` = waiting + active)
+- Среднее время обработки (из последних 20 завершённых, `avgProcessingTimeMs`)
+- Разбивка по целевым форматам (`byFormat`)
+- Список последних 50 задач (`recentJobs`)
 
-### GET /stats/events (`routes/stats-events.ts`)
+### GET /stats/stream (`routes/stats-events.ts`)
 
-SSE-подписка на канал `stats-changed`. Отправляет `{"changed":true}` при каждом изменении статистики. Heartbeat каждые 15с.
+SSE-подписка на канал `stats-changed`. Отправляет `{"changed":true}` при каждом изменении статистики. Heartbeat каждые 15с. Автореконнект на клиенте с задержкой 3с.
 
 ## Очередь (`src/shared/queue.ts`)
 

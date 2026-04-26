@@ -62,32 +62,35 @@
 
 ```
 media-processing/
-├── src/
-│   ├── api/                  # REST API сервер
-│   │   ├── index.ts          # Fastify: middleware, CORS, rate limit
-│   │   └── routes/
-│   │       ├── convert.ts    # POST /convert — загрузка, валидация, очередь
-│   │       ├── status.ts     # GET /jobs/:id — статус задачи
-│   │       ├── cancel.ts     # POST /jobs/:id/cancel — отмена задачи
-│   │       ├── events.ts     # GET /events/:id — SSE прогресс
-│   │       ├── stats.ts      # GET /stats — статистика (кэш 5с)
-│   │       └── stats-events.ts # GET /stats/events — SSE обновления статистики
-│   ├── worker/               # Обработчики задач
-│   │   ├── index.ts          # Запуск воркеров по приоритетам
-│   │   ├── processor.ts      # Логика обработки, статусы, webhook
-│   │   ├── ffmpeg.ts         # FFmpeg обёртка + FORMAT_CODECS
-│   │   ├── ffprobe.ts        # Получение длительности
-│   │   └── webhook.ts        # HTTP webhook с retry
-│   ├── shared/               # Общие модули
-│   │   ├── types.ts          # TypeScript интерфейсы
-│   │   ├── queue.ts          # Кастомная FIFO очередь (Redis + Lua)
-│   │   ├── redis.ts          # Redis клиент
-│   │   ├── pubsub.ts         # Redis pub/sub каналы
-│   │   └── compatibility.ts  # Проверка совместимости форматов
-│   ├── cleanup/              # Cron cleanup сервис
-│   │   └── cron.ts           # Удаление старых файлов
-│   └── config/
-│       └── index.ts          # Конфигурация из env
+├── backend/                  # Node.js бэкенд (Fastify + FFmpeg)
+│   ├── src/
+│   │   ├── api/                  # REST API сервер
+│   │   │   ├── index.ts          # Fastify: middleware, CORS, rate limit
+│   │   │   └── routes/
+│   │   │       ├── convert.ts    # POST /convert — загрузка, валидация, очередь
+│   │   │       ├── status.ts     # GET /jobs/:id — статус задачи
+│   │   │       ├── cancel.ts     # POST /jobs/:id/cancel — отмена задачи
+│   │   │       ├── events.ts     # GET /events/:id — SSE прогресс
+│   │   │       ├── stats.ts      # GET /stats — статистика (кэш 5с)
+│   │   │       └── stats-events.ts # GET /stats/stream — SSE обновления статистики
+│   │   ├── worker/               # Обработчики задач
+│   │   │   ├── index.ts          # Запуск воркеров по приоритетам
+│   │   │   ├── processor.ts      # Логика обработки, статусы, webhook
+│   │   │   ├── ffmpeg.ts         # FFmpeg обёртка + FORMAT_CODECS
+│   │   │   ├── ffprobe.ts        # Получение длительности
+│   │   │   └── webhook.ts        # HTTP webhook с retry
+│   │   ├── shared/               # Общие модули
+│   │   │   ├── types.ts          # TypeScript интерфейсы
+│   │   │   ├── queue.ts          # Кастомная FIFO очередь (Redis + Lua)
+│   │   │   ├── redis.ts          # Redis клиент
+│   │   │   ├── pubsub.ts         # Redis pub/sub каналы
+│   │   │   └── compatibility.ts  # Проверка совместимости форматов
+│   │   ├── cleanup/              # Cron cleanup сервис
+│   │   │   └── cron.ts           # Удаление старых файлов
+│   │   └── config/
+│   │       └── index.ts          # Конфигурация из env
+│   ├── Dockerfile
+│   └── package.json
 ├── frontend/                 # Vanilla TypeScript + Vite
 │   ├── src/
 │   │   ├── api/
@@ -111,14 +114,13 @@ media-processing/
 │   │   │   └── AnimatedBackground.ts # Canvas анимация
 │   │   ├── css/                  # Стили компонентов
 │   │   └── types.ts              # Типы + форматные константы
-│   └── ...
+│   └── package.json
 ├── docs/                     # Документация
 │   ├── backend.md            # Документация бэкенда
 │   └── frontend.md           # Документация фронтенда
 ├── e2e/                      # Playwright E2E тесты
 ├── docker-compose.yml
-├── Dockerfile
-└── package.json
+└── package.json              # Root: workspaces, скрипты
 ```
 
 ## Быстрый старт
@@ -135,20 +137,21 @@ docker compose up --build -d
 ### Локальная разработка
 
 ```bash
-# Backend
+# Зависимости
 npm install
-npm run build
-docker compose up redis -d
-npm run dev
 
-# Frontend (отдельный терминал)
-cd frontend
-npm install
-npm run dev
+# Требуется FFmpeg
+brew install ffmpeg    # macOS
+# sudo apt install ffmpeg  # Linux
 
-# Worker (отдельный терминал)
-npm run start:worker
+# Запуск Redis
+docker compose up -d redis
+
+# Запуск API + Worker + Frontend (одной командой)
+npm run dev
 ```
+
+`npm run dev` запускает всё через concurrently: API-сервер, воркеры (4 процесса) и Vite dev-сервер.
 
 ---
 
@@ -191,6 +194,8 @@ curl -X POST http://localhost:3000/convert \
   "progress": 0-100,
   "outputUrl": "/outputs/{jobId}/{jobId}.{format}",
   "error": "error message if failed",
+  "fileName": "video.mp4",
+  "targetFormat": "mkv",
   "priorityName": "high" | "medium" | "low",
   "fileSize": 12345,
   "createdAt": "1700000000000",
@@ -231,11 +236,8 @@ data: {"jobId":"...","progress":100,"status":"completed","outputUrl":"/outputs/.
 **Response (200):**
 ```json
 {
-  "totalJobs": 42,
-  "completed": 35,
-  "failed": 3,
-  "active": 1,
-  "waiting": 3,
+  "total": 42,
+  "byStatus": { "completed": 35, "failed": 3, "active": 1, "waiting": 3 },
   "queueCount": 4,
   "avgProcessingTimeMs": 5200,
   "byFormat": { "mp3": 15, "wav": 10 },
@@ -245,7 +247,7 @@ data: {"jobId":"...","progress":100,"status":"completed","outputUrl":"/outputs/.
 
 ---
 
-### GET /stats/events
+### GET /stats/stream
 
 SSE для обновлений статистики в реальном времени. Heartbeat каждые 15с.
 
@@ -328,7 +330,7 @@ SSE для обновлений статистики в реальном вре�
 | `PRIORITY_HIGH_MAX_MB`    | 10           | Порог high priority (МБ)        |
 | `PRIORITY_MEDIUM_MAX_MB`  | 50           | Порог medium priority (МБ)      |
 | `MAX_FILE_SIZE_MB`        | 200          | Макс. размер файла (МБ)         |
-| `RATE_LIMIT_MAX`          | 10           | Макс. запросов в окно           |
+| `RATE_LIMIT_MAX`          | 100          | Макс. запросов в окно           |
 | `RATE_LIMIT_WINDOW`       | 1 minute     | Окно rate limiting              |
 | `FILE_MAX_AGE_HOURS`      | 24           | Время хранения файлов (часы)    |
 | `WEBHOOK_MAX_RETRIES`     | 3            | Retry для webhook               |
