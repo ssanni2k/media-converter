@@ -108,6 +108,8 @@ export function mountProgressDisplay(
     update({ status, progress, isConnected, estimatedTotal, conversionStartTime, queueCount, estimatedWaitMs, outputUrl, outputFileName, error }) {
       // --- Progress bar and queue info ---
       if (status === 'waiting') {
+        cancelAnimationFrame(animFrame);
+        displayedProgress = 0;
         bar.style.display = 'none';
         eta.style.display = 'none';
         percentage.style.display = 'none';

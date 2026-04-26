@@ -1,5 +1,6 @@
 import '../css/JobQueue.css';
 import { createJobCard, updateJobCard } from './JobCard';
+import { getJobStatus } from '../api/conversionApi';
 
 interface QueueJob {
   jobId: string;
@@ -8,6 +9,8 @@ interface QueueJob {
   status: string;
   progress: number;
 }
+
+const POLL_INTERVAL = 2000;
 
 export function mountJobQueue(container: HTMLElement): {
   update: (jobs: QueueJob[]) => void;
@@ -30,6 +33,35 @@ export function mountJobQueue(container: HTMLElement): {
   const countBadge = container.querySelector('.job-queue__count') as HTMLElement;
   const emptyMsg = container.querySelector('.job-queue__empty') as HTMLElement;
   const cardMap = new Map<string, HTMLElement>();
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+  const stopPoll = () => {
+    if (pollTimer !== null) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const startPoll = () => {
+    stopPoll();
+    pollTimer = setInterval(async () => {
+      for (const [jobId, card] of cardMap) {
+        try {
+          const status = await getJobStatus(jobId);
+          updateJobCard(card, {
+            jobId,
+            fileName: card.querySelector('.job-card__file-name')?.textContent || '',
+            targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
+            status: status.status,
+            progress: status.progress,
+            createdAt: 0,
+          });
+        } catch {
+          // ignore
+        }
+      }
+    }, POLL_INTERVAL);
+  };
 
   const render = (jobs: QueueJob[]) => {
     const activeIds = new Set(jobs.map(j => j.jobId));
@@ -55,6 +87,12 @@ export function mountJobQueue(container: HTMLElement): {
 
     emptyMsg.style.display = jobs.length === 0 ? '' : 'none';
     countBadge.textContent = String(jobs.length);
+
+    if (cardMap.size > 0) {
+      startPoll();
+    } else {
+      stopPoll();
+    }
   };
 
   return {
@@ -62,6 +100,7 @@ export function mountJobQueue(container: HTMLElement): {
       render(jobs);
     },
     destroy() {
+      stopPoll();
       cardMap.clear();
     },
   };
