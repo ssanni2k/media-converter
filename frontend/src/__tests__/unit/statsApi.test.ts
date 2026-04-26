@@ -56,7 +56,7 @@ describe('subscribeStatsChanges', () => {
 
     const es = getLastEventSource();
     expect(es).toBeDefined();
-    expect(es!.url).toContain('/stats/events');
+    expect(es!.url).toContain('/stats/stream');
 
     cleanup();
     expect(es!.readyState).toBe(2); // CLOSED

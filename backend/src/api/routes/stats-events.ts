@@ -1,7 +1,7 @@
 import { createSubscriber, STATS_CHANNEL } from '../../shared/pubsub.js';
 
 export default async function statsEventsRoute(fastify: any) {
-  fastify.get('/stats/events', async (request: any, reply: any) => {
+  fastify.get('/stats/stream', async (request: any, reply: any) => {
     reply.raw.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',

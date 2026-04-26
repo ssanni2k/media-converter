@@ -25,11 +25,25 @@ export async function getStats(): Promise<StatsResponse> {
 }
 
 export function subscribeStatsChanges(onChange: () => void): () => void {
-  const es = new EventSource(`${API_BASE}/stats/events`);
-  es.onmessage = () => onChange();
-  es.onerror = () => {
-    es.close();
-    setTimeout(() => subscribeStatsChanges(onChange), 3000);
+  let es: EventSource | null = null;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let cancelled = false;
+
+  const connect = () => {
+    if (cancelled) return;
+    es = new EventSource(`${API_BASE}/stats/stream`);
+    es.onmessage = () => onChange();
+    es.onerror = () => {
+      es?.close();
+      es = null;
+      retryTimer = setTimeout(connect, 3000);
+    };
   };
-  return () => es.close();
+  connect();
+
+  return () => {
+    cancelled = true;
+    if (retryTimer) clearTimeout(retryTimer);
+    es?.close();
+  };
 }
