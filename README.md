@@ -151,7 +151,7 @@ docker compose up -d redis
 npm run dev
 ```
 
-`npm run dev` запускает всё через concurrently: API-сервер, воркеры (4 процесса) и Vite dev-сервер.
+`npm run dev` запускает всё через concurrently: API-сервер, воркеры и Vite dev-сервер. Перед запуском `predev`-скрипт освобождает порты 3000 и 5173.
 
 ---
 
@@ -363,13 +363,28 @@ SSE для обновлений статистики в реальном вре�
 
 ## Тестирование
 
-E2E тесты с Playwright: [e2e/TESTING.md](e2e/TESTING.md)
+### Unit/Integration тесты
 
 ```bash
-docker compose up --build -d
-cd e2e && npm install && npx playwright install chromium
-npm test
+npm test                # Все тесты во всех workspace'ах
+npm run test:unit       # Только unit-тесты
+npm run test:integration # Только integration-тесты
+npm run test:coverage   # С покрытием
 ```
+
+### E2E тесты (Playwright)
+
+```bash
+npm install
+npx playwright install chromium
+
+npm run test:e2e            # Все E2E тесты
+npm run test:e2e:headed     # С видимым браузером
+npm run test:e2e:ui         # С UI Playwright
+npm run test:e2e:report     # HTML отчёт
+```
+
+Подробнее: [e2e/TESTING.md](e2e/TESTING.md)
 
 ## Лицензия
 

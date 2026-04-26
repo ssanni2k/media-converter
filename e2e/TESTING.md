@@ -8,18 +8,20 @@
 # Убедиться, что Docker контейнеры запущены
 docker compose up --build -d
 
-# Установить зависимости (один раз)
+# Установить зависимости (один раз, из корня проекта)
 npm install
 npx playwright install chromium
 
-# Запустить все тесты
-npm test
+# Запустить все E2E тесты
+npm run test:e2e
 
 # Запустить конкретный файл
 npx @playwright/test tests/06-conversion-queue.spec.ts
 
-# HTML отчёт
-npx playwright show-report
+# С видимым браузером / UI / HTML отчёт
+npm run test:e2e:headed
+npm run test:e2e:ui
+npm run test:e2e:report
 ```
 
 ## Конфигурация Playwright

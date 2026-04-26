@@ -41,9 +41,9 @@ frontend/src/
     ├── index.css          # Глобальные стили и reset
     ├── App.css            # Стили основного контейнера
     ├── FileUpload.css     # Зона загрузки
-    ├── FormatSelector.css | Селектор формата
-    ├── ProgressDisplay.css | Прогресс-бар и действия
-    ├── DownloadButton.css | Кнопка скачивания
+    ├── FormatSelector.css  # Селектор формата
+    ├── ProgressDisplay.css # Прогресс-бар и действия
+    ├── DownloadButton.css  # Кнопка скачивания
     ├── JobCard.css        | Карточка задачи
     ├── JobHistory.css     | Сетка истории
     ├── JobQueue.css       | Информация об очереди
@@ -179,7 +179,11 @@ frontend/src/
 
 ### JobQueue (`ui/JobQueue.ts`)
 
-Отображает информацию об очереди при статусе `waiting`: количество задач и ожидаемое время ожидания.
+Отображает активные задачи из очереди на странице статистики:
+- Карточки активных задач (JobCard) с прогресс-барами
+- Polling каждые 2 секунды для обновления прогресса через `GET /jobs/:id`
+- Автоматическое удаление карточек при достижении терминального статуса (completed/failed/cancelled)
+- Счётчик активных задач
 
 ### JobCard (`ui/JobCard.ts`)
 
@@ -202,11 +206,11 @@ frontend/src/
 ### StatsPage (`ui/StatsPage.ts`)
 
 Страница статистики (загружается по требованию):
-- Общее количество задач и разбивка по статусам
-- Среднее время обработки
-- Количество задач в очереди
-- Разбивка по форматам (bar chart)
-- Последние задачи (список)
+- Общее количество задач и разбивка по статусам (карточки)
+- Doughnut chart по форматам (Chart.js)
+- Bar chart по статусам (Chart.js)
+- Таблица последних конвертаций
+- Встроенный JobQueue для отображения активных задач
 - SSE-подписка на `GET /stats/stream` для real-time обновлений
 
 ### AnimatedBackground (`ui/AnimatedBackground.ts`)
@@ -222,6 +226,7 @@ Canvas-анимация с частицами-бабочками. Toggle-кно�
 | `createSSEConnection(jobId, onMessage, onError)` | EventSource на `/events/:id` |
 | `cancelJob(jobId)` | POST `/jobs/:id/cancel` |
 | `abortUpload()` | Прерывание текущей загрузки XHR |
+| `getDownloadUrl(outputPath)` | Формирует URL для скачивания файла |
 
 ## API клиент статистики (`api/statsApi.ts`)
 
@@ -240,9 +245,10 @@ Canvas-анимация с частицами-бабочками. Toggle-кно�
 ## Запуск
 
 ```bash
-cd frontend
-npm install
 npm run dev        # Dev-сервер на http://localhost:5173
 npm run build      # Сборка (tsc + vite build)
 npm run preview    # Превью сборки
+npm test           # Unit-тесты (vitest)
+npm run test:unit  # Только unit-тесты
+npm run test:integration # Только integration-тесты
 ```
