@@ -7,8 +7,8 @@ backend/dist/
 frontend/dist/
 
 # Runtime data
-data/uploads/
-data/outputs/
+data/
+backend/data/
 
 # Test results
 test-results/
