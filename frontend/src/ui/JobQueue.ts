@@ -2,12 +2,15 @@ import '../css/JobQueue.css';
 import { createJobCard, updateJobCard } from './JobCard';
 import { getJobStatus } from '../api/conversionApi';
 
+const TERMINAL = new Set(['completed', 'failed', 'cancelled']);
+
 interface QueueJob {
   jobId: string;
   fileName: string;
   targetFormat: string;
   status: string;
   progress: number;
+  createdAt: number;
 }
 
 const POLL_INTERVAL = 2000;
@@ -42,22 +45,43 @@ export function mountJobQueue(container: HTMLElement): {
     }
   };
 
+  const removeCard = (jobId: string) => {
+    const card = cardMap.get(jobId);
+    if (card) {
+      card.remove();
+      cardMap.delete(jobId);
+    }
+    if (cardMap.size === 0) {
+      stopPoll();
+      emptyMsg.style.display = '';
+    }
+    countBadge.textContent = String(cardMap.size);
+  };
+
   const startPoll = () => {
     stopPoll();
     pollTimer = setInterval(async () => {
-      for (const [jobId, card] of cardMap) {
+      const jobIds = [...cardMap.keys()];
+      for (const jobId of jobIds) {
         try {
           const status = await getJobStatus(jobId);
-          updateJobCard(card, {
-            jobId,
-            fileName: card.querySelector('.job-card__file-name')?.textContent || '',
-            targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
-            status: status.status,
-            progress: status.progress,
-            createdAt: 0,
-          });
+          if (TERMINAL.has(status.status)) {
+            removeCard(jobId);
+            continue;
+          }
+          const card = cardMap.get(jobId);
+          if (card) {
+            updateJobCard(card, {
+              jobId,
+              fileName: card.querySelector('.job-card__file-name')?.textContent || '',
+              targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
+              status: status.status,
+              progress: status.progress,
+              createdAt: parseInt(card.querySelector('.job-card__timestamp')?.dataset.ts || '0') || Date.now(),
+            });
+          }
         } catch {
-          // ignore
+          removeCard(jobId);
         }
       }
     }, POLL_INTERVAL);
@@ -80,6 +104,8 @@ export function mountJobQueue(container: HTMLElement): {
         updateJobCard(cardMap.get(job.jobId)!, job as any);
       } else {
         const card = createJobCard(job as any, () => {});
+        const tsEl = card.querySelector('.job-card__timestamp');
+        if (tsEl) tsEl.dataset.ts = String(job.createdAt);
         grid.appendChild(card);
         cardMap.set(job.jobId, card);
       }

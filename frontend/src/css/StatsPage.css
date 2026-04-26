@@ -76,7 +76,12 @@
 .stats-chart-card__body {
   padding: var(--spacing-lg);
   position: relative;
-  min-height: 200px;
+  height: 280px;
+}
+
+.stats-chart-card__body canvas {
+  position: absolute;
+  inset: var(--spacing-lg);
 }
 
 /* Table */

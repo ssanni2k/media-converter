@@ -103,7 +103,8 @@ export function mountStatsPage(container: HTMLElement): () => void {
 
     // Update queue with active jobs from server
     const activeJobs = data.recentJobs
-      .filter(j => j.status === 'active' || j.status === 'waiting');
+      .filter(j => j.status === 'active' || j.status === 'waiting')
+      .map(j => ({ ...j, createdAt: parseInt(j.createdAt) || Date.now() }));
     queue.update(activeJobs);
 
     // Charts
@@ -127,6 +128,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { position: 'bottom', labels: { color: '#A0B8CC', padding: 12, font: { size: 12 } } },
         },
@@ -152,6 +154,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { color: '#A0B8CC' }, grid: { color: 'rgba(255,255,255,0.05)' } },
