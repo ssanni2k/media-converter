@@ -8,7 +8,7 @@ services:
       - redis-data:/data
 
   api:
-    build: .
+    build: ./backend
     ports:
       - "3000:3000"
     volumes:
@@ -30,7 +30,7 @@ services:
       - api
 
   worker:
-    build: .
+    build: ./backend
     volumes:
       - ./data:/app/data
     environment:
@@ -43,7 +43,7 @@ services:
     command: node dist/worker/index.js
 
   cleanup:
-    build: .
+    build: ./backend
     volumes:
       - ./data:/app/data
     environment:
