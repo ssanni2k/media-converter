@@ -45,15 +45,6 @@ export async function convert(
     const ffmpeg = spawn('ffmpeg', args);
     ffmpeg.stdin.end();
 
-    if (signal) {
-      const check = setInterval(() => {
-        if (signal.aborted) {
-          clearInterval(check);
-          ffmpeg.kill('SIGKILL');
-        }
-      }, 200);
-      ffmpeg.on('close', () => clearInterval(check));
-    }
     let lastTime = 0;
     let resolved = false;
 
@@ -79,6 +70,22 @@ export async function convert(
       }, STALL_TIMEOUT_MS);
     };
     resetStallTimer();
+
+    if (signal) {
+      const check = setInterval(() => {
+        if (signal.aborted) {
+          clearInterval(check);
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timer);
+            clearTimeout(stallTimer);
+            ffmpeg.kill('SIGKILL');
+            reject(new Error('CANCELLED'));
+          }
+        }
+      }, 200);
+      ffmpeg.on('close', () => clearInterval(check));
+    }
 
     const MAX_STDERR = 64 * 1024;
     let stderrChunks: Buffer[] = [];

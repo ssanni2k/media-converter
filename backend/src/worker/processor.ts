@@ -21,6 +21,13 @@ export async function processJob(jobData: JobData): Promise<void> {
   }
 
   await mkdir(path.dirname(outputPath), { recursive: true });
+
+  // Check if cancelled while waiting in queue
+  const preStatus = await getJobStatus(jobId);
+  if (preStatus?.status === 'cancelled') {
+    return;
+  }
+
   await setJobStatus(jobId, { status: 'active', progress: 0 });
   publisher.publish(STATS_CHANNEL, '1').catch(() => {});
 
@@ -40,8 +47,13 @@ export async function processJob(jobData: JobData): Promise<void> {
 
       const progressEvent = { ...event, jobId };
       publisher.publish(PROGRESS_CHANNEL, JSON.stringify(progressEvent)).catch(() => {});
-      setJobStatus(jobId, { status: 'active', progress: progressEvent.progress }).catch(() => {});
+      if (!cancelled) {
+        setJobStatus(jobId, { status: 'active', progress: progressEvent.progress }).catch(() => {});
+      }
     });
+
+    // Re-check after convert returns (may have been cancelled during final frames)
+    if (cancelled) throw new Error('CANCELLED');
 
     const outputUrl = `/outputs/${jobId}/${jobId}.${format}`;
 

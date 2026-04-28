@@ -89,6 +89,7 @@ export default async function statsRoute(fastify: any) {
     stats.recentJobs = jobs.slice(0, 50);
 
     stats.queueCount = (stats.byStatus.waiting || 0) + (stats.byStatus.active || 0);
+    stats.byStatus.cancelled = stats.byStatus.cancelled || 0;
 
     const completedJobs = jobs
       .filter(j => j.status === 'completed' && j.completedAt && j.createdAt)

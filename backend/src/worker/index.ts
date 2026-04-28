@@ -1,8 +1,9 @@
 import { createSubscriber, QUEUE_CHANNELS, publisher } from '../shared/pubsub.js';
 import { getNextJob, releaseWorkerJobs, removeJob } from '../shared/queue.js';
-import { processJob } from './processor.js';
+import { processJob, setJobStatus, getJobStatus } from './processor.js';
 import { config } from '../config/index.js';
 import pino from 'pino';
+import redis from '../shared/redis.js';
 import type { Priority } from '../shared/types.js';
 
 const logger = pino({ level: 'info' });
@@ -58,7 +59,24 @@ async function startWorker(workerId: string, priority: Priority): Promise<() => 
   };
 }
 
+async function cleanupStaleJobs(): Promise<void> {
+  const keys = await redis.keys('job:*');
+  for (const key of keys) {
+    const status = await getJobStatus(key.replace('job:', ''));
+    if (status && (status.status === 'active' || status.status === 'waiting')) {
+      await setJobStatus(key.replace('job:', ''), {
+        status: 'failed',
+        error: 'Воркер перезапущен — задача не завершена',
+      });
+      await removeJob(key.replace('job:', ''));
+      logger.info({ jobId: key }, 'Cleaned up stale job');
+    }
+  }
+}
+
 async function main() {
+  await cleanupStaleJobs();
+
   const priorities: Priority[] = ['high', 'medium', 'low'];
   const counts: Record<Priority, number> = {
     high: config.workers.high,

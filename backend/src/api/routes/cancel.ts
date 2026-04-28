@@ -1,4 +1,5 @@
 import { getJobStatus, setJobStatus } from '../../worker/processor.js';
+import { removeJob } from '../../shared/queue.js';
 
 export default async function cancelRoute(fastify: any) {
   fastify.post('/jobs/:id/cancel', async (request: any, reply: any) => {
@@ -14,6 +15,7 @@ export default async function cancelRoute(fastify: any) {
     }
 
     await setJobStatus(jobId, { status: 'cancelled', error: 'Отменено пользователем' });
+    await removeJob(jobId);
     return { cancelled: true };
   });
 }
