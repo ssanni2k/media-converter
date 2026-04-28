@@ -66,7 +66,7 @@ export function mountFileUpload(container: HTMLElement, store: AppStore): () => 
     selected.style.display = 'flex';
     fileIcon.textContent = file.type.startsWith('video/') ? '🎬' : '🎵';
     fileName.textContent = file.name;
-    fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+    fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} МБ`;
     zone.classList.add('upload-zone--has-file');
   };
 

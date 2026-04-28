@@ -25,10 +25,14 @@ export async function processJob(jobData: JobData): Promise<void> {
   publisher.publish(STATS_CHANNEL, '1').catch(() => {});
 
   let cancelled = false;
+  const cancelSignal = { aborted: false };
   const cancelCheck = setInterval(async () => {
     const s = await getJobStatus(jobId);
-    if (s?.status === 'cancelled') cancelled = true;
-  }, 1000);
+    if (s?.status === 'cancelled') {
+      cancelled = true;
+      cancelSignal.aborted = true;
+    }
+  }, 200);
 
   try {
     await convert(inputPath, outputPath, format, (event: ProgressEvent) => {

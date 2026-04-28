@@ -170,6 +170,7 @@ export class AppStore {
 
   private handleProgress(progress: number, status: JobStatus, estimatedTotal?: number): void {
     if (this.isTerminal()) return;
+    if (status === 'completed' || status === 'failed' || status === 'cancelled') return;
 
     if (status === 'active') {
       this.stopQueuePoll();
@@ -192,9 +193,9 @@ export class AppStore {
   private handleComplete(outputUrl: string): void {
     if (this.isTerminal() && this.conversion.status !== 'active') return;
     this.stopQueuePoll();
-    this.conversion = { status: 'completed', progress: 100, outputUrl };
     this.stopPolling();
     this.stopSSE();
+    this.conversion = { status: 'completed', progress: 100, outputUrl };
     if (this.currentJob) {
       this.jobHistory.updateJob(this.currentJob.jobId, { status: 'completed', progress: 100, outputUrl });
       this.emitHistoryImmediate();
@@ -205,9 +206,9 @@ export class AppStore {
   private handleError(error: string): void {
     if (this.isTerminal() && this.conversion.status !== 'active') return;
     this.stopQueuePoll();
-    this.conversion = { ...this.conversion, status: 'failed', error };
     this.stopPolling();
     this.stopSSE();
+    this.conversion = { ...this.conversion, status: 'failed', error };
     if (this.currentJob) {
       this.jobHistory.updateJob(this.currentJob.jobId, { status: 'failed', error });
       this.emitHistoryImmediate();
@@ -217,9 +218,9 @@ export class AppStore {
 
   private handleCancel(): void {
     this.stopQueuePoll();
-    this.conversion = { ...this.conversion, status: 'cancelled', error: 'Отменено пользователем' };
     this.stopPolling();
     this.stopSSE();
+    this.conversion = { ...this.conversion, status: 'cancelled', error: 'Отменено пользователем' };
     if (this.currentJob) {
       this.jobHistory.updateJob(this.currentJob.jobId, { status: 'cancelled', error: 'Отменено пользователем' });
       this.emitHistoryImmediate();
@@ -240,7 +241,7 @@ export class AppStore {
     try {
       const data = await getStats();
       const concurrency = 4;
-      const queueCount = data.queueCount;
+      const queueCount = Math.max(0, data.queueCount - 1);
       const estimatedWaitMs = data.avgProcessingTimeMs > 0
         ? Math.round(data.avgProcessingTimeMs * queueCount / concurrency)
         : undefined;
@@ -269,10 +270,12 @@ export class AppStore {
       if (this.isTerminal()) return;
       try {
         const status = await getJobStatus(jobId);
+        // Double-check: the status may have changed while awaiting
+        if (this.isTerminal()) return;
         if (status.status === 'completed') {
           this.handleComplete(status.outputUrl!);
         } else if (status.status === 'failed') {
-          this.handleError(status.error || 'Unknown error');
+          this.handleError(status.error || 'Ошибка');
         } else if (status.status === 'cancelled') {
           this.handleCancel();
         } else {
@@ -295,7 +298,7 @@ export class AppStore {
         if (event.status === 'completed' && event.outputUrl) {
           this.handleComplete(event.outputUrl);
         } else if (event.status === 'failed') {
-          this.handleError(event.error || 'Conversion failed');
+          this.handleError(event.error || 'Ошибка конвертации');
         } else if (event.status === 'cancelled') {
           this.handleCancel();
         } else {
@@ -349,7 +352,7 @@ export class AppStore {
       this.conversion = {
         status: 'failed',
         progress: 0,
-        error: err instanceof Error ? err.message : 'Upload failed',
+        error: err instanceof Error ? err.message : 'Ошибка загрузки',
       };
       this.emitConversion();
     }

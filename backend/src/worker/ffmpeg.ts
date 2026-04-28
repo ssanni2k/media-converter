@@ -28,7 +28,8 @@ export async function convert(
   inputPath: string,
   outputPath: string,
   format: string,
-  onProgress: (event: ProgressEvent) => void
+  onProgress: (event: ProgressEvent) => void,
+  signal?: { aborted: boolean }
 ): Promise<void> {
   let duration = 0;
   try {
@@ -43,6 +44,16 @@ export async function convert(
   return new Promise((resolve, reject) => {
     const ffmpeg = spawn('ffmpeg', args);
     ffmpeg.stdin.end();
+
+    if (signal) {
+      const check = setInterval(() => {
+        if (signal.aborted) {
+          clearInterval(check);
+          ffmpeg.kill('SIGKILL');
+        }
+      }, 200);
+      ffmpeg.on('close', () => clearInterval(check));
+    }
     let lastTime = 0;
     let resolved = false;
 

@@ -34,18 +34,18 @@ export async function startConversion(
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(JSON.parse(xhr.responseText));
       } else {
-        reject(new Error(`Upload failed: ${xhr.statusText}`));
+        reject(new Error(`Ошибка загрузки: ${xhr.statusText}`));
       }
     });
 
     xhr.addEventListener('error', () => {
       currentUploadXhr = null;
-      reject(new Error('Network error'));
+      reject(new Error('Ошибка сети'));
     });
 
     xhr.addEventListener('abort', () => {
       currentUploadXhr = null;
-      reject(new Error('Upload aborted'));
+      reject(new Error('Загрузка отменена'));
     });
 
     // Stall detection: abort if no progress for 5 minutes

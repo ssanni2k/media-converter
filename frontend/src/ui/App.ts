@@ -24,7 +24,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
         <div class="header__brand">
           <span class="header__logo">${BUTTERFLY_SVG}</span>
           <div>
-            <h1 class="header__title">Конвертер Медиа</h1>
+            <h1 class="header__title">Сервис конвертации медиа</h1>
             <p class="header__subtitle">Конвертируйте аудио и видео файлы в любой формат</p>
           </div>
         </div>
@@ -57,7 +57,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
       </main>
 
       <footer class="footer">
-        <span class="footer__text">Media Converter Service &copy; 2026</span>
+        <span class="footer__text">Сервис конвертации медиа &copy; 2026</span>
       </footer>
     </div>
   `;
