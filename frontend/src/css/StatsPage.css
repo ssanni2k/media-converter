@@ -63,6 +63,12 @@
   backdrop-filter: blur(10px);
   box-shadow: 6px 6px 12px var(--shadow-dark);
   overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.stats-chart-card:hover {
+  border-color: rgba(32, 156, 238, 0.3);
+  box-shadow: 6px 6px 12px var(--shadow-dark), 0 0 15px var(--accent-glow);
 }
 
 .stats-chart-card__title {
@@ -93,6 +99,12 @@
   backdrop-filter: blur(10px);
   box-shadow: 6px 6px 12px var(--shadow-dark);
   overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.stats-table-card:hover {
+  border-color: rgba(32, 156, 238, 0.3);
+  box-shadow: 6px 6px 12px var(--shadow-dark), 0 0 15px var(--accent-glow);
 }
 
 .stats-table-card__title {
@@ -128,6 +140,7 @@
   font-size: 13px;
   color: var(--text-primary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background var(--transition-fast);
 }
 
 .stats-table tbody tr:hover {

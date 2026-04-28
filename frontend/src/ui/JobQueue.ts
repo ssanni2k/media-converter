@@ -48,14 +48,17 @@ export function mountJobQueue(container: HTMLElement): {
   const removeCard = (jobId: string) => {
     const card = cardMap.get(jobId);
     if (card) {
-      card.remove();
-      cardMap.delete(jobId);
+      card.classList.add('fade-leave');
+      card.addEventListener('animationend', () => {
+        card.remove();
+        cardMap.delete(jobId);
+        if (cardMap.size === 0) {
+          stopPoll();
+          emptyMsg.style.display = '';
+        }
+        countBadge.textContent = String(cardMap.size);
+      }, { once: true });
     }
-    if (cardMap.size === 0) {
-      stopPoll();
-      emptyMsg.style.display = '';
-    }
-    countBadge.textContent = String(cardMap.size);
   };
 
   const startPoll = () => {

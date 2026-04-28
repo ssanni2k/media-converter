@@ -191,7 +191,8 @@ export class AppStore {
   }
 
   private handleComplete(outputUrl: string): void {
-    if (this.isTerminal() && this.conversion.status !== 'active') return;
+    if (this.isTerminal()) return;
+    if (this.conversion.status !== 'active' && this.conversion.status !== 'waiting') return;
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
@@ -204,7 +205,8 @@ export class AppStore {
   }
 
   private handleError(error: string): void {
-    if (this.isTerminal() && this.conversion.status !== 'active') return;
+    if (this.isTerminal()) return;
+    if (this.conversion.status !== 'active' && this.conversion.status !== 'waiting') return;
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
@@ -292,8 +294,9 @@ export class AppStore {
     this.eventSource = createSSEConnection(
       jobId,
       (event) => {
+        if (this.isTerminal()) return;
+
         this.isConnected = true;
-        this.emitConversion();
 
         if (event.status === 'completed' && event.outputUrl) {
           this.handleComplete(event.outputUrl);
@@ -306,6 +309,7 @@ export class AppStore {
         }
       },
       (_error) => {
+        if (this.isTerminal()) return;
         this.isConnected = false;
         this.emitConversion();
         if (this.currentJob && !this.isTerminal() && this.sseRetryCount < 5) {

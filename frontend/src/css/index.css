@@ -42,6 +42,7 @@
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 400ms ease;
+  --transition-fade: 300ms ease opacity, 300ms ease transform;
 }
 
 * {
@@ -149,4 +150,24 @@ body {
 @keyframes statusPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Fade out for removal */
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+/* === FADE UTILITY === */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: var(--transition-fade);
+}
+.fade-leave {
+  animation: fadeOut var(--transition-normal) ease forwards;
 }

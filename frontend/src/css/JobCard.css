@@ -52,6 +52,7 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: background var(--transition-normal);
 }
 
 .job-card__icon {

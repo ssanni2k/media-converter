@@ -40,8 +40,11 @@ export function mountJobHistory(container: HTMLElement, store: AppStore): () => 
     // Remove cards for jobs no longer in terminal list
     for (const [id, el] of cardMap) {
       if (!currentIds.has(id)) {
-        el.remove();
-        cardMap.delete(id);
+        el.classList.add('fade-leave');
+        el.addEventListener('animationend', () => {
+          el.remove();
+          cardMap.delete(id);
+        }, { once: true });
       }
     }
 
