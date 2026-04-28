@@ -190,15 +190,15 @@ export class AppStore {
     this.emitConversion();
   }
 
-  private handleComplete(outputUrl: string): void {
+  private handleComplete(outputUrl: string | null): void {
     if (this.isTerminal()) return;
     if (this.conversion.status !== 'active' && this.conversion.status !== 'waiting') return;
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
-    this.conversion = { status: 'completed', progress: 100, outputUrl };
+    this.conversion = { status: 'completed', progress: 100, outputUrl: outputUrl || '' };
     if (this.currentJob) {
-      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'completed', progress: 100, outputUrl });
+      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'completed', progress: 100, outputUrl: outputUrl || '' });
       this.emitHistoryImmediate();
     }
     this.emitConversion();
@@ -268,18 +268,29 @@ export class AppStore {
   }
 
   private startPolling(jobId: string): void {
+    this.stopPolling();
     this.pollInterval = window.setInterval(async () => {
       if (this.isTerminal()) return;
       try {
         const status = await getJobStatus(jobId);
-        // Double-check: the status may have changed while awaiting
         if (this.isTerminal()) return;
-        if (status.status === 'completed') {
-          this.handleComplete(status.outputUrl!);
-        } else if (status.status === 'failed') {
-          this.handleError(status.error || 'Ошибка');
-        } else if (status.status === 'cancelled') {
-          this.handleCancel();
+
+        // Only polling can trigger terminal transitions
+        if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+          // Verify with a fresh request to avoid stale data
+          const verified = await getJobStatus(jobId);
+          if (this.isTerminal()) return;
+
+          if (verified.status === 'completed') {
+            this.handleComplete(verified.outputUrl || null);
+          } else if (verified.status === 'failed') {
+            this.handleError(verified.error || 'Ошибка');
+          } else if (verified.status === 'cancelled') {
+            this.handleCancel();
+          } else {
+            // Status changed back — it's active again
+            this.handleProgress(verified.progress, verified.status);
+          }
         } else {
           this.handleProgress(status.progress, status.status);
         }
@@ -298,13 +309,8 @@ export class AppStore {
 
         this.isConnected = true;
 
-        if (event.status === 'completed' && event.outputUrl) {
-          this.handleComplete(event.outputUrl);
-        } else if (event.status === 'failed') {
-          this.handleError(event.error || 'Ошибка конвертации');
-        } else if (event.status === 'cancelled') {
-          this.handleCancel();
-        } else {
+        // SSE only handles progress — terminal states are detected by polling
+        if (event.status !== 'completed' && event.status !== 'failed' && event.status !== 'cancelled') {
           this.handleProgress(event.progress, event.status, event.estimatedTotal);
         }
       },
