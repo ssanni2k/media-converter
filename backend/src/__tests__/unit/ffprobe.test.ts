@@ -8,6 +8,11 @@ vi.mock('child_process', () => ({
   spawn: (...args: any[]) => spawnMock(...args),
 }));
 
+vi.mock('../../config/paths.js', () => ({
+  FFMPEG_PATH: 'ffmpeg',
+  FFPROBE_PATH: 'ffprobe',
+}));
+
 import { getDuration } from '../../worker/ffprobe.js';
 
 describe('getDuration', () => {

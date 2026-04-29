@@ -12,6 +12,11 @@ vi.mock('../../worker/ffprobe.js', () => ({
   getDuration: vi.fn().mockResolvedValue(10),
 }));
 
+vi.mock('../../config/paths.js', () => ({
+  FFMPEG_PATH: 'ffmpeg',
+  FFPROBE_PATH: 'ffprobe',
+}));
+
 import { convert, FORMAT_CODECS } from '../../worker/ffmpeg.js';
 
 describe('FORMAT_CODECS', () => {

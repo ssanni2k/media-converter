@@ -45,7 +45,7 @@ export async function processJob(jobData: JobData): Promise<void> {
     await convert(inputPath, outputPath, format, (event: ProgressEvent) => {
       if (cancelled) throw new Error('CANCELLED');
 
-      const progressEvent = { ...event, jobId };
+      const progressEvent = { ...event, jobId, status: 'active' };
       publisher.publish(PROGRESS_CHANNEL, JSON.stringify(progressEvent)).catch(() => {});
       if (!cancelled) {
         setJobStatus(jobId, { status: 'active', progress: progressEvent.progress }).catch(() => {});

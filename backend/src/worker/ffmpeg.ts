@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { ProgressEvent } from '../shared/types.js';
 import { getDuration } from './ffprobe.js';
+import { FFMPEG_PATH } from '../config/paths.js';
 
 export const FORMAT_CODECS: Record<string, string[]> = {
   // Audio
@@ -42,7 +43,7 @@ export async function convert(
   const args = buildArgs(inputPath, outputPath, format);
 
   return new Promise((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', args);
+    const ffmpeg = spawn(FFMPEG_PATH, args);
     ffmpeg.stdin.end();
 
     let lastTime = 0;

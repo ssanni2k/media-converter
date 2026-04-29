@@ -168,23 +168,30 @@ export class AppStore {
     return this.conversion.status === 'completed' || this.conversion.status === 'failed' || this.conversion.status === 'cancelled';
   }
 
-  private handleProgress(progress: number, status: JobStatus, estimatedTotal?: number): void {
+  private handleProgress(progress: number, status: JobStatus | undefined, estimatedTotal?: number): void {
     if (this.isTerminal()) return;
-    if (status === 'completed' || status === 'failed' || status === 'cancelled') return;
 
-    if (status === 'active') {
+    const effectiveStatus = status && status !== 'completed' && status !== 'failed' && status !== 'cancelled'
+      ? status
+      : this.conversion.status as JobStatus || 'active';
+
+    if (effectiveStatus === 'completed' || effectiveStatus === 'failed' || effectiveStatus === 'cancelled') {
+      return;
+    }
+
+    if (effectiveStatus === 'active') {
       this.stopQueuePoll();
     }
 
     this.conversion = {
       ...this.conversion,
       progress,
-      status,
+      status: effectiveStatus,
       ...(estimatedTotal && !this.conversion.estimatedTotal && { estimatedTotal }),
       ...(!this.conversion.conversionStartTime && { conversionStartTime: Date.now() }),
     };
     if (this.currentJob) {
-      this.jobHistory.updateJob(this.currentJob.jobId, { progress, status });
+      this.jobHistory.updateJob(this.currentJob.jobId, { progress, status: effectiveStatus });
       this.emitHistoryDebounced();
     }
     this.emitConversion();
@@ -192,7 +199,6 @@ export class AppStore {
 
   private handleComplete(outputUrl: string | null): void {
     if (this.isTerminal()) return;
-    if (this.conversion.status !== 'active' && this.conversion.status !== 'waiting') return;
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
@@ -206,7 +212,6 @@ export class AppStore {
 
   private handleError(error: string): void {
     if (this.isTerminal()) return;
-    if (this.conversion.status !== 'active' && this.conversion.status !== 'waiting') return;
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
@@ -333,6 +338,15 @@ export class AppStore {
   }
 
   async startConversion(file: File, format: string): Promise<void> {
+    this.stopPolling();
+    this.stopSSE();
+    this.stopQueuePoll();
+    this.sseRetryCount = 0;
+    if (this.historyEmitTimer !== null) {
+      clearTimeout(this.historyEmitTimer);
+      this.historyEmitTimer = null;
+    }
+
     this.conversion = { status: 'uploading', progress: 0 };
     this.emitConversion();
 

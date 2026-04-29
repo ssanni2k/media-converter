@@ -1,8 +1,9 @@
 import { spawn } from 'child_process';
+import { FFPROBE_PATH } from '../config/paths.js';
 
 export async function getDuration(inputPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    const ffprobe = spawn('ffprobe', [
+    const ffprobe = spawn(FFPROBE_PATH, [
       '-v', 'error',
       '-show_entries', 'format=duration',
       '-of', 'csv=p=0',
