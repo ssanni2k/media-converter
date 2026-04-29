@@ -117,7 +117,7 @@ export default async function convertRoute(fastify: any) {
       publisher.publish(STATS_CHANNEL, '1').catch(() => {});
     } catch (error) {
       await cleanup();
-      const message = error instanceof Error ? error.message : 'Ошибка загрузки файла';
+      const message = error instanceof Error ? error.message : 'File upload failed';
       return reply.status(500).send({ error: message });
     }
 

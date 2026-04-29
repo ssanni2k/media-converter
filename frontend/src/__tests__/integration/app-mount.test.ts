@@ -86,7 +86,7 @@ describe('AppStore integration', () => {
     await store.startConversion(file, 'mp3');
 
     expect(store.conversion.status).toBe('failed');
-    expect(store.conversion.error).toBe('Network error');
+    expect(store.conversion.error).toBe('Ошибка сети');
   });
 
   it('reset clears all state after conversion', async () => {

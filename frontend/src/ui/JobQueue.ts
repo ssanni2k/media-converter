@@ -2,16 +2,12 @@ import '../css/JobQueue.css';
 import { createJobCard, updateJobCard } from './JobCard';
 import { getJobStatus } from '../api/conversionApi';
 import { t } from '../i18n/index.js';
+import type { JobHistoryItem, JobStatus } from '../types';
 
-const TERMINAL = new Set(['completed', 'failed', 'cancelled']);
+const TERMINAL = new Set<JobStatus>(['completed', 'failed', 'cancelled']);
 
-interface QueueJob {
-  jobId: string;
-  fileName: string;
-  targetFormat: string;
-  status: string;
-  progress: number;
-  createdAt: number;
+interface QueueJob extends Omit<JobHistoryItem, 'error' | 'outputUrl'> {
+  status: JobStatus;
 }
 
 const POLL_INTERVAL = 2000;
@@ -102,9 +98,9 @@ export function mountJobQueue(container: HTMLElement): {
     // Add/update cards
     for (const job of jobs) {
       if (cardMap.has(job.jobId)) {
-        updateJobCard(cardMap.get(job.jobId)!, job as any);
+        updateJobCard(cardMap.get(job.jobId)!, job);
       } else {
-        const card = createJobCard(job as any, () => {});
+        const card = createJobCard(job, () => {});
         const tsEl = card.querySelector('.job-card__timestamp');
         if (tsEl) tsEl.dataset.ts = String(job.createdAt);
         grid.appendChild(card);

@@ -85,6 +85,7 @@ const ERROR_PATTERNS: [string, string][] = [
   ['Job not found', 'errors.jobNotFound'],
   ['Job already finished', 'errors.jobAlreadyFinished'],
   ['Cancelled by user', 'errors.cancelledByUser'],
+  ['Upload cancelled', 'errors.cancelled'],
   ['Uploaded file is empty', 'errors.fileEmpty'],
   ['Input file not found or corrupted', 'errors.fileNotFound'],
   ['Conversion timeout exceeded', 'errors.conversionTimeout'],
@@ -92,6 +93,10 @@ const ERROR_PATTERNS: [string, string][] = [
   ['Unsupported file format', 'errors.unsupportedFileFormat'],
   ['Failed to determine file duration', 'errors.durationTimeout'],
   ['Worker restarted', 'errors.workerRestarted'],
+  ['Network error', 'errors.network'],
+  ['Upload stalled', 'errors.uploadStalled'],
+  ['Failed to parse SSE event', 'errors.sseParseError'],
+  ['SSE connection error', 'errors.sseConnectionError'],
   ['Unknown error', 'errors.unknown'],
 ];
 
@@ -122,16 +127,3 @@ export function setLocale(locale: string): void {
     fn();
   }
 }
-
-export function onLocaleChange(fn: () => void): () => void {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
-export function toggleLocale(): string {
-  const next = currentLocale === 'ru' ? 'en' : 'ru';
-  setLocale(next);
-  return next;
-}
-
-export { SUPPORTED_LOCALES };

@@ -8,7 +8,7 @@ function getStatusConfig(status: string): { label: string; icon: string } {
     idle: '⏳', uploading: '⬆️', waiting: '⏱️', active: '⚙️',
     completed: '✅', failed: '❌', cancelled: '⚠️',
   };
-  return { label: t(`status.${status}`) || t('status.idle'), icon: icons[status] || icons.idle };
+  return { label: t(`status.${status}`), icon: icons[status] || icons.idle };
 }
 
 function formatWaitTime(ms: number): string {

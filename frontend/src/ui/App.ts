@@ -35,7 +35,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
             <button class="header__lang-option ${getLocale() === 'ru' ? 'header__lang-option--active' : ''}" data-lang="ru">RU</button>
             <button class="header__lang-option ${getLocale() === 'en' ? 'header__lang-option--active' : ''}" data-lang="en">EN</button>
           </div>
-          <button class="animated-background__toggle" aria-label="Toggle animation">⏸</button>
+          <button class="animated-background__toggle" aria-label="${t('app.toggleAnimation')}">⏸</button>
         </div>
       </header>
 
@@ -183,7 +183,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
   window.addEventListener('storage', onStorage);
 
   // Reconcile stale history with server (fixes stuck cards after refresh)
-  store.reconcileHistory();
+  store.reconcileHistory().catch(() => {});
 
   return () => {
     fileUploadCleanup();

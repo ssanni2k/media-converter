@@ -1,7 +1,7 @@
 import '../css/JobCard.css';
 import type { JobHistoryItem } from '../types';
 import { createDownloadButton } from './DownloadButton';
-import { t } from '../i18n/index.js';
+import { t, getLocale } from '../i18n/index.js';
 
 const STATUS_ICONS: Record<string, string> = {
   waiting: '⏱️',
@@ -33,7 +33,7 @@ export function createJobCard(job: JobHistoryItem, onRemove: () => void): HTMLEl
     </div>` : ''}
     <div class="job-card__download-slot"></div>
     <div class="job-card__error-slot"></div>
-    <div class="job-card__timestamp">${new Date(job.createdAt).toLocaleString()}</div>
+    <div class="job-card__timestamp">${new Date(job.createdAt).toLocaleString(getLocale() === 'ru' ? 'ru-RU' : 'en-US')}</div>
   `;
 
   card.querySelector('.job-card__remove-btn')!.addEventListener('click', onRemove);

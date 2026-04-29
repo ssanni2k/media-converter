@@ -6,7 +6,7 @@ import { localizeError, t } from '../i18n/index.js';
 import type { JobStatus, SupportedFormat, JobHistoryItem } from '../types';
 
 export interface ConversionState {
-  status: JobStatus | 'uploading' | 'idle' | 'cancelled';
+  status: JobStatus | 'uploading' | 'idle';
   progress: number;
   estimatedTotal?: number;
   conversionStartTime?: number;

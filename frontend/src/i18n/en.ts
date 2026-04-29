@@ -4,6 +4,7 @@ export default {
     subtitle: 'Convert audio and video files to any format',
     footer: 'Media Converter © 2026',
     convert: 'Convert',
+    toggleAnimation: 'Toggle animation',
   },
   status: {
     idle: 'Ready',

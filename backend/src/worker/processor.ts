@@ -50,7 +50,7 @@ export async function processJob(jobData: JobData): Promise<void> {
       if (!cancelled) {
         setJobStatus(jobId, { status: 'active', progress: progressEvent.progress }).catch(() => {});
       }
-    });
+    }, cancelSignal);
 
     // Re-check after convert returns (may have been cancelled during final frames)
     if (cancelled) throw new Error('CANCELLED');
