@@ -1,5 +1,6 @@
 import '../css/FileUpload.css';
 import type { AppStore } from '../store/AppStore';
+import { t } from '../i18n/index.js';
 
 export function mountFileUpload(container: HTMLElement, store: AppStore): () => void {
   container.innerHTML = `
@@ -7,9 +8,9 @@ export function mountFileUpload(container: HTMLElement, store: AppStore): () => 
       <input type="file" accept="audio/*,video/*" class="upload-zone__input" id="file-input" />
       <label for="file-input" class="upload-zone__label">
         <span class="upload-zone__icon">📁</span>
-        <span class="upload-zone__text">Перетащите файл или нажмите для выбора</span>
-        <span class="upload-zone__hint">Поддерживаются аудио и видео файлы</span>
-        <span class="upload-zone__size-limit">Максимальный размер файла: 200 МБ</span>
+        <span class="upload-zone__text">${t('upload.dragDrop')}</span>
+        <span class="upload-zone__hint">${t('upload.supported')}</span>
+        <span class="upload-zone__size-limit">${t('upload.maxSize', { size: 200 })}</span>
       </label>
       <div class="upload-zone__selected" style="display:none">
         <span class="upload-zone__file-icon"></span>
@@ -64,9 +65,9 @@ export function mountFileUpload(container: HTMLElement, store: AppStore): () => 
   const showFile = (file: File) => {
     label.style.display = 'none';
     selected.style.display = 'flex';
-    fileIcon.textContent = file.type.startsWith('video/') ? '🎬' : '🎵';
+    fileIcon.textContent = file.type.startsWith('video/') ? t('upload.videoIcon') : t('upload.audioIcon');
     fileName.textContent = file.name;
-    fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} МБ`;
+    fileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} ${t('upload.fileSizeUnit')}`;
     zone.classList.add('upload-zone--has-file');
   };
 

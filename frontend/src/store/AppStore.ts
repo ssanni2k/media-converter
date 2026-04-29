@@ -2,6 +2,7 @@ import { EventEmitter } from './EventEmitter';
 import { JobHistoryStore } from './JobHistoryStore';
 import { startConversion as apiStartConversion, getJobStatus, createSSEConnection, cancelJob as apiCancelJob, abortUpload } from '../api/conversionApi';
 import { getStats } from '../api/statsApi';
+import { localizeError, t } from '../i18n/index.js';
 import type { JobStatus, SupportedFormat, JobHistoryItem } from '../types';
 
 export interface ConversionState {
@@ -132,14 +133,14 @@ export class AppStore {
           this.jobHistory.updateJob(job.jobId, { status: 'completed', progress: 100, outputUrl: status.outputUrl });
           changed = true;
         } else if (status.status === 'failed') {
-          this.jobHistory.updateJob(job.jobId, { status: 'failed', error: status.error || 'Ошибка' });
+          this.jobHistory.updateJob(job.jobId, { status: 'failed', error: localizeError(status.error || '') });
           changed = true;
         } else if (status.status === 'cancelled') {
-          this.jobHistory.updateJob(job.jobId, { status: 'cancelled', error: 'Отменено' });
+          this.jobHistory.updateJob(job.jobId, { status: 'cancelled', error: t('errors.cancelled') });
           changed = true;
         }
       } catch {
-        this.jobHistory.updateJob(job.jobId, { status: 'failed', error: 'Задача не найдена' });
+        this.jobHistory.updateJob(job.jobId, { status: 'failed', error: t('errors.jobNotFound') });
         changed = true;
       }
     }
@@ -215,9 +216,9 @@ export class AppStore {
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
-    this.conversion = { ...this.conversion, status: 'failed', error };
+    this.conversion = { ...this.conversion, status: 'failed', error: localizeError(error) };
     if (this.currentJob) {
-      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'failed', error });
+      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'failed', error: localizeError(error) });
       this.emitHistoryImmediate();
     }
     this.emitConversion();
@@ -227,9 +228,9 @@ export class AppStore {
     this.stopQueuePoll();
     this.stopPolling();
     this.stopSSE();
-    this.conversion = { ...this.conversion, status: 'cancelled', error: 'Отменено пользователем' };
+    this.conversion = { ...this.conversion, status: 'cancelled', error: t('errors.cancelledByUser') };
     if (this.currentJob) {
-      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'cancelled', error: 'Отменено пользователем' });
+      this.jobHistory.updateJob(this.currentJob.jobId, { status: 'cancelled', error: t('errors.cancelledByUser') });
       this.emitHistoryImmediate();
     }
     this.emitConversion();
@@ -283,7 +284,7 @@ export class AppStore {
         if (status.status === 'completed') {
           this.handleComplete(status.outputUrl || null);
         } else if (status.status === 'failed') {
-          this.handleError(status.error || 'Ошибка');
+          this.handleError(status.error || '');
         } else if (status.status === 'cancelled') {
           this.handleCancel();
         } else {
@@ -307,7 +308,7 @@ export class AppStore {
         if (event.status === 'completed') {
           this.handleComplete(event.outputUrl || null);
         } else if (event.status === 'failed') {
-          this.handleError(event.error || 'Ошибка');
+          this.handleError(event.error || '');
         } else if (event.status === 'cancelled') {
           this.handleCancel();
         } else {
@@ -371,7 +372,7 @@ export class AppStore {
       this.conversion = {
         status: 'failed',
         progress: 0,
-        error: err instanceof Error ? err.message : 'Ошибка загрузки',
+        error: localizeError(err instanceof Error ? err.message : ''),
       };
       this.emitConversion();
     }

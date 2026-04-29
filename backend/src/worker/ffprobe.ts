@@ -17,7 +17,7 @@ export async function getDuration(inputPath: string): Promise<number> {
       if (!finished) {
         finished = true;
         ffprobe.kill('SIGKILL');
-        reject(new Error('Не удалось определить длительность файла — превышено время ожидания'));
+        reject(new Error('Failed to determine file duration — timeout exceeded'));
       }
     }, 10000);
 
@@ -32,12 +32,12 @@ export async function getDuration(inputPath: string): Promise<number> {
       if (code === 0) {
         const duration = parseFloat(output.trim());
         if (isNaN(duration)) {
-          reject(new Error('Не удалось прочитать файл — формат не поддерживается'));
+          reject(new Error('Unsupported file format'));
         } else {
           resolve(duration);
         }
       } else {
-        reject(new Error('Не удалось прочитать файл — формат не поддерживается'));
+        reject(new Error('Unsupported file format'));
       }
     });
 
@@ -45,7 +45,7 @@ export async function getDuration(inputPath: string): Promise<number> {
       if (finished) return;
       finished = true;
       clearTimeout(timer);
-      reject(new Error(`Ошибка анализа файла: ${err.message}`));
+      reject(new Error(`File analysis error: ${err.message}`));
     });
   });
 }

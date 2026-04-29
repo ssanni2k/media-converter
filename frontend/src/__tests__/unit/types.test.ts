@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SUPPORTED_FORMATS, FORMAT_INFO, getCompatibleFormats } from '../../types';
+import { SUPPORTED_FORMATS, FORMAT_CATEGORIES, FORMAT_ICONS, getFormatInfo, getCategoryLabel, getCompatibleFormats } from '../../types';
 
 describe('SUPPORTED_FORMATS', () => {
   it('contains 16 formats', () => {
@@ -32,30 +32,46 @@ describe('SUPPORTED_FORMATS', () => {
   });
 });
 
-describe('FORMAT_INFO', () => {
+describe('FORMAT_CATEGORIES and FORMAT_ICONS', () => {
   it('has an entry for every supported format', () => {
     for (const format of SUPPORTED_FORMATS) {
-      expect(FORMAT_INFO[format]).toBeDefined();
-      expect(FORMAT_INFO[format].category).toBeDefined();
-      expect(FORMAT_INFO[format].label).toBeDefined();
+      expect(FORMAT_CATEGORIES[format]).toBeDefined();
+      expect(FORMAT_ICONS[format]).toBeDefined();
     }
   });
 
   it('categorizes audio formats correctly', () => {
-    expect(FORMAT_INFO.mp3.category).toBe('audio');
-    expect(FORMAT_INFO.wav.category).toBe('audio');
-    expect(FORMAT_INFO.flac.category).toBe('audio');
+    expect(FORMAT_CATEGORIES.mp3).toBe('audio');
+    expect(FORMAT_CATEGORIES.wav).toBe('audio');
+    expect(FORMAT_CATEGORIES.flac).toBe('audio');
   });
 
   it('categorizes video formats correctly', () => {
-    expect(FORMAT_INFO.mp4.category).toBe('video');
-    expect(FORMAT_INFO.webm.category).toBe('video');
+    expect(FORMAT_CATEGORIES.mp4).toBe('video');
+    expect(FORMAT_CATEGORIES.webm).toBe('video');
   });
 
   it('categorizes container formats correctly', () => {
-    expect(FORMAT_INFO.mkv.category).toBe('container');
-    expect(FORMAT_INFO.ts.category).toBe('container');
-    expect(FORMAT_INFO.mxf.category).toBe('container');
+    expect(FORMAT_CATEGORIES.mkv).toBe('container');
+    expect(FORMAT_CATEGORIES.ts).toBe('container');
+    expect(FORMAT_CATEGORIES.mxf).toBe('container');
+  });
+});
+
+describe('getFormatInfo', () => {
+  it('returns format info with category, label function, and icon', () => {
+    const info = getFormatInfo('mp3');
+    expect(info.category).toBe('audio');
+    expect(typeof info.label).toBe('function');
+    expect(info.icon).toBeDefined();
+  });
+});
+
+describe('getCategoryLabel', () => {
+  it('returns Russian labels by default', () => {
+    expect(getCategoryLabel('audio')).toBe('Аудио');
+    expect(getCategoryLabel('video')).toBe('Видео');
+    expect(getCategoryLabel('container')).toBe('Контейнеры');
   });
 });
 

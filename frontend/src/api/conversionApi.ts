@@ -34,26 +34,25 @@ export async function startConversion(
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(JSON.parse(xhr.responseText));
       } else {
-        reject(new Error(`Ошибка загрузки: ${xhr.statusText}`));
+        reject(new Error(xhr.statusText || 'File upload failed'));
       }
     });
 
     xhr.addEventListener('error', () => {
       currentUploadXhr = null;
-      reject(new Error('Ошибка сети'));
+      reject(new Error('Network error'));
     });
 
     xhr.addEventListener('abort', () => {
       currentUploadXhr = null;
-      reject(new Error('Загрузка отменена'));
+      reject(new Error('Upload cancelled'));
     });
 
-    // Stall detection: abort if no progress for 5 minutes
     const stallTimer = setInterval(() => {
       if (Date.now() - lastProgressTime > 300_000) {
         xhr.abort();
         clearInterval(stallTimer);
-        reject(new Error('Загрузка зависла — нет прогресса более 5 минут'));
+        reject(new Error('Upload stalled — no progress'));
       }
     }, 30_000);
 

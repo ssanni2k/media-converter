@@ -1,3 +1,5 @@
+import { t } from './i18n/index.js';
+
 export type JobStatus = 'waiting' | 'active' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobStatusResponse {
@@ -22,7 +24,7 @@ export type FormatCategory = 'audio' | 'video' | 'container';
 
 export interface FormatInfo {
   category: FormatCategory;
-  label: string;
+  label: () => string;
   icon: string;
 }
 
@@ -34,30 +36,55 @@ export const SUPPORTED_FORMATS = [
 
 export type SupportedFormat = (typeof SUPPORTED_FORMATS)[number];
 
-export const FORMAT_INFO: Record<SupportedFormat, FormatInfo> = {
-  mp3:  { category: 'audio',     label: 'MP3 (Аудио)',        icon: '🎵' },
-  wav:  { category: 'audio',     label: 'WAV (Аудио)',        icon: '📼' },
-  flac: { category: 'audio',     label: 'FLAC (Без потерь)',  icon: '💿' },
-  ogg:  { category: 'audio',     label: 'OGG (Аудио)',        icon: '🔊' },
-  aac:  { category: 'audio',     label: 'AAC (Аудио)',        icon: '🎵' },
-  wma:  { category: 'audio',     label: 'WMA (Аудио)',        icon: '🎵' },
-  ac3:  { category: 'audio',     label: 'AC3 (Аудио)',        icon: '🔊' },
-  mp4:  { category: 'video',     label: 'MP4 (Видео)',        icon: '🎬' },
-  webm: { category: 'video',     label: 'WebM (Видео)',       icon: '🌐' },
-  mov:  { category: 'video',     label: 'MOV (Видео)',        icon: '🎬' },
-  avi:  { category: 'video',     label: 'AVI (Видео)',        icon: '🎥' },
-  flv:  { category: 'video',     label: 'FLV (Видео)',        icon: '🎥' },
-  mkv:  { category: 'container', label: 'MKV (Контейнер)',    icon: '📦' },
-  ts:   { category: 'container', label: 'TS (Транспортный)',  icon: '📡' },
-  mxf:  { category: 'container', label: 'MXF (Контейнер)',    icon: '📼' },
-  asf:  { category: 'container', label: 'ASF (Контейнер)',    icon: '📦' },
+export const FORMAT_ICONS: Record<SupportedFormat, string> = {
+  mp3:  '🎵',
+  wav:  '📼',
+  flac: '💿',
+  ogg:  '🔊',
+  aac:  '🎵',
+  wma:  '🎵',
+  ac3:  '🔊',
+  mp4:  '🎬',
+  webm: '🌐',
+  mov:  '🎬',
+  avi:  '🎥',
+  flv:  '🎥',
+  mkv:  '📦',
+  ts:   '📡',
+  mxf:  '📼',
+  asf:  '📦',
 };
 
-export const CATEGORY_LABELS: Record<FormatCategory, string> = {
-  audio: 'Аудио',
-  video: 'Видео',
-  container: 'Контейнеры',
+export const FORMAT_CATEGORIES: Record<SupportedFormat, FormatCategory> = {
+  mp3:  'audio',
+  wav:  'audio',
+  flac: 'audio',
+  ogg:  'audio',
+  aac:  'audio',
+  wma:  'audio',
+  ac3:  'audio',
+  mp4:  'video',
+  webm: 'video',
+  mov:  'video',
+  avi:  'video',
+  flv:  'video',
+  mkv:  'container',
+  ts:   'container',
+  mxf:  'container',
+  asf:  'container',
 };
+
+export function getFormatInfo(fmt: SupportedFormat): FormatInfo {
+  return {
+    category: FORMAT_CATEGORIES[fmt],
+    label: () => t(`format.${fmt}`),
+    icon: FORMAT_ICONS[fmt],
+  };
+}
+
+export function getCategoryLabel(category: FormatCategory): string {
+  return t(`format.categories.${category}`);
+}
 
 const AUDIO_ONLY_FORMATS = new Set(['mp3', 'wav', 'flac', 'ogg', 'aac', 'wma', 'ac3']);
 const VIDEO_FORMATS = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf']);

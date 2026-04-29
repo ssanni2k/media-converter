@@ -1,17 +1,19 @@
 import '../css/StatsPage.css';
 import { getStats, subscribeStatsChanges, type StatsResponse } from '../api/statsApi';
 import { mountJobQueue } from './JobQueue';
+import { t, getLocale } from '../i18n/index.js';
 
 declare const Chart: any;
 
 function formatTimestamp(ts: string): string {
   const d = new Date(parseInt(ts));
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const locale = getLocale() === 'ru' ? 'ru-RU' : 'en-US';
+  return d.toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 function statusLabel(status: string): string {
-  const map: Record<string, string> = { completed: 'Завершено', failed: 'Ошибка', active: 'В работе', waiting: 'В очереди' };
+  const map: Record<string, string> = { completed: t('stats.statusCompleted'), failed: t('stats.statusFailed'), active: t('stats.statusActive'), waiting: t('stats.statusWaiting'), cancelled: t('stats.statusCancelled') };
   return map[status] || status;
 }
 
@@ -25,31 +27,31 @@ export function mountStatsPage(container: HTMLElement): () => void {
       <div class="stats-cards">
         <div class="stats-card">
           <span class="stats-card__value" id="stat-total">—</span>
-          <span class="stats-card__label">Всего</span>
+          <span class="stats-card__label">${t('stats.total')}</span>
         </div>
         <div class="stats-card stats-card--success">
           <span class="stats-card__value" id="stat-completed">—</span>
-          <span class="stats-card__label">Успешных</span>
+          <span class="stats-card__label">${t('stats.completed')}</span>
         </div>
         <div class="stats-card stats-card--error">
           <span class="stats-card__value" id="stat-failed">—</span>
-          <span class="stats-card__label">С ошибками</span>
+          <span class="stats-card__label">${t('stats.failed')}</span>
         </div>
         <div class="stats-card stats-card--active">
           <span class="stats-card__value" id="stat-active">—</span>
-          <span class="stats-card__label">В процессе</span>
+          <span class="stats-card__label">${t('stats.active')}</span>
         </div>
       </div>
 
       <div class="stats-charts">
         <div class="stats-chart-card">
-          <h3 class="stats-chart-card__title">По форматам</h3>
+          <h3 class="stats-chart-card__title">${t('stats.byFormat')}</h3>
           <div class="stats-chart-card__body">
             <canvas id="chart-by-format"></canvas>
           </div>
         </div>
         <div class="stats-chart-card">
-          <h3 class="stats-chart-card__title">По статусам</h3>
+          <h3 class="stats-chart-card__title">${t('stats.byStatus')}</h3>
           <div class="stats-chart-card__body">
             <canvas id="chart-by-status"></canvas>
           </div>
@@ -59,19 +61,19 @@ export function mountStatsPage(container: HTMLElement): () => void {
       <div class="stats-queue-slot"></div>
 
       <div class="stats-table-card">
-        <h3 class="stats-table-card__title">Последние конвертации</h3>
+        <h3 class="stats-table-card__title">${t('stats.recent')}</h3>
         <div class="stats-table-card__body">
           <table class="stats-table">
             <thead>
               <tr>
-                <th>Файл</th>
-                <th>Формат</th>
-                <th>Статус</th>
-                <th>Дата</th>
+                <th>${t('stats.file')}</th>
+                <th>${t('stats.format')}</th>
+                <th>${t('stats.status')}</th>
+                <th>${t('stats.date')}</th>
               </tr>
             </thead>
             <tbody id="stats-table-body">
-              <tr><td colspan="4" class="stats-table__empty">Загрузка...</td></tr>
+              <tr><td colspan="4" class="stats-table__empty">${t('stats.loading')}</td></tr>
             </tbody>
           </table>
         </div>
@@ -90,7 +92,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
       data = await getStats();
     } catch {
       container.querySelector('#stats-table-body')!.innerHTML =
-        '<tr><td colspan="4" class="stats-table__empty">Не удалось загрузить данные</td></tr>';
+        `<tr><td colspan="4" class="stats-table__empty">${t('stats.error')}</td></tr>`;
       return;
     }
 
@@ -140,7 +142,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
     statusChart = new Chart(statusCtx, {
       type: 'bar',
       data: {
-        labels: ['Завершено', 'С ошибками', 'В работе', 'В очереди'],
+        labels: [t('stats.statusCompleted'), t('stats.statusFailed'), t('stats.statusActive'), t('stats.statusWaiting')],
         datasets: [{
           data: [
             data.byStatus.completed || 0,
@@ -166,7 +168,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
     // Table
     const tbody = container.querySelector('#stats-table-body') as HTMLElement;
     if (data.recentJobs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="stats-table__empty">Нет данных</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="4" class="stats-table__empty">${t('stats.noData')}</td></tr>`;
       return;
     }
 

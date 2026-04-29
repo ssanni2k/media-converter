@@ -1,4 +1,5 @@
 import '../css/TabBar.css';
+import { t } from '../i18n/index.js';
 
 export type TabId = 'converter' | 'statistics';
 
@@ -9,8 +10,8 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
-  { id: 'converter', label: 'Конвертер', icon: '🔄' },
-  { id: 'statistics', label: 'Статистика', icon: '📊' },
+  { id: 'converter', label: t('tabs.converter'), icon: '🔄' },
+  { id: 'statistics', label: t('tabs.statistics'), icon: '📊' },
 ];
 
 export function mountTabBar(

@@ -1,12 +1,13 @@
 import '../css/DownloadButton.css';
 import { getDownloadUrl } from '../api/conversionApi';
+import { t } from '../i18n/index.js';
 
 export function createDownloadButton(outputUrl: string, fileName?: string): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.className = 'download-btn';
   let downloading = false;
 
-  btn.innerHTML = `<span class="download-btn__icon">⬇️</span><span>Скачать</span>`;
+  btn.innerHTML = `<span class="download-btn__icon">⬇️</span><span>${t('download.button')}</span>`;
 
   btn.addEventListener('click', async () => {
     if (downloading) return;
@@ -16,7 +17,7 @@ export function createDownloadButton(outputUrl: string, fileName?: string): HTML
     try {
       downloading = true;
       btn.disabled = true;
-      btn.innerHTML = `<span class="download-btn__icon">⏳</span><span>Загрузка...</span>`;
+      btn.innerHTML = `<span class="download-btn__icon">⏳</span><span>${t('download.loading')}</span>`;
 
       const response = await fetch(fullUrl);
       const blob = await response.blob();
@@ -24,7 +25,7 @@ export function createDownloadButton(outputUrl: string, fileName?: string): HTML
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName || 'converted-file';
+      link.download = fileName || t('download.defaultName');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -34,7 +35,7 @@ export function createDownloadButton(outputUrl: string, fileName?: string): HTML
     } finally {
       downloading = false;
       btn.disabled = false;
-      btn.innerHTML = `<span class="download-btn__icon">⬇️</span><span>Скачать</span>`;
+btn.innerHTML = `<span class="download-btn__icon">⬇️</span><span>${t('download.button')}</span>`;
     }
   });
 

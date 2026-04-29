@@ -1,6 +1,7 @@
 import '../css/JobCard.css';
 import type { JobHistoryItem } from '../types';
 import { createDownloadButton } from './DownloadButton';
+import { t } from '../i18n/index.js';
 
 const STATUS_ICONS: Record<string, string> = {
   waiting: '⏱️',
@@ -20,7 +21,7 @@ export function createJobCard(job: JobHistoryItem, onRemove: () => void): HTMLEl
       <span class="job-card__status-marker"></span>
       <span class="job-card__icon">${STATUS_ICONS[job.status]}</span>
       <span class="job-card__format">${job.targetFormat.toUpperCase()}</span>
-      <button class="job-card__remove-btn" aria-label="Удалить">✕</button>
+      <button class="job-card__remove-btn" aria-label="${t('history.remove')}">✕</button>
     </div>
     <div class="job-card__file-name">${escapeHtml(job.fileName)}</div>
     ${job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled' ? `
@@ -46,6 +47,10 @@ export function createJobCard(job: JobHistoryItem, onRemove: () => void): HTMLEl
 
   if (job.status === 'failed' && job.error) {
     errorSlot.innerHTML = `<div class="job-card__error">${escapeHtml(job.error)}</div>`;
+  }
+
+  if (job.status === 'cancelled') {
+    errorSlot.innerHTML = `<div class="job-card__info">${escapeHtml(job.error || t('status.cancelled'))}</div>`;
   }
 
   return card;
@@ -80,6 +85,10 @@ export function updateJobCard(element: HTMLElement, job: JobHistoryItem): void {
 
   if (job.status === 'failed' && job.error) {
     errorSlot.innerHTML = `<div class="job-card__error">${escapeHtml(job.error)}</div>`;
+  }
+
+  if (job.status === 'cancelled') {
+    errorSlot.innerHTML = `<div class="job-card__info">${escapeHtml(job.error || t('status.cancelled'))}</div>`;
   }
 }
 

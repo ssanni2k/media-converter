@@ -14,7 +14,7 @@ export default async function cancelRoute(fastify: any) {
       return reply.status(400).send({ error: 'Job already finished' });
     }
 
-    await setJobStatus(jobId, { status: 'cancelled', error: 'Отменено пользователем' });
+    await setJobStatus(jobId, { status: 'cancelled', error: 'Cancelled by user' });
     await removeJob(jobId);
     return { cancelled: true };
   });

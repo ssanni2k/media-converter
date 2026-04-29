@@ -1,6 +1,7 @@
 import '../css/JobQueue.css';
 import { createJobCard, updateJobCard } from './JobCard';
 import { getJobStatus } from '../api/conversionApi';
+import { t } from '../i18n/index.js';
 
 const TERMINAL = new Set(['completed', 'failed', 'cancelled']);
 
@@ -22,12 +23,12 @@ export function mountJobQueue(container: HTMLElement): {
   container.innerHTML = `
     <div class="job-queue">
       <div class="job-queue__header">
-        <h2 class="job-queue__title">Очередь</h2>
-        <span class="job-queue__subtitle">Обработка выполняется асинхронно</span>
+        <h2 class="job-queue__title">${t('queue.title')}</h2>
+        <span class="job-queue__subtitle">${t('queue.subtitle')}</span>
         <span class="job-queue__count">0</span>
       </div>
       <div class="job-queue__grid">
-        <div class="job-queue__empty">Нет активных задач</div>
+        <div class="job-queue__empty">${t('queue.empty')}</div>
       </div>
     </div>
   `;

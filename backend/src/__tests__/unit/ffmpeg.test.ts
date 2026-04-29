@@ -71,7 +71,7 @@ describe('convert', () => {
       mockProcess._emitClose(1);
     }, 10);
 
-    await expect(promise).rejects.toThrow('кодом 1');
+    await expect(promise).rejects.toThrow('code 1');
   });
 
   it('calls spawn with correct arguments including format codecs', async () => {

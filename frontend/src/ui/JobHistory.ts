@@ -1,13 +1,14 @@
 import '../css/JobHistory.css';
 import type { AppStore } from '../store/AppStore';
 import { createJobCard, updateJobCard } from './JobCard';
+import { t } from '../i18n/index.js';
 
 export function mountJobHistory(container: HTMLElement, store: AppStore): () => void {
   container.innerHTML = `
     <div class="job-history" style="display:none">
       <div class="job-history__header">
-        <h2 class="job-history__title">История конвертаций</h2>
-        <button class="job-history__clear-btn">Очистить всё</button>
+        <h2 class="job-history__title">${t('history.title')}</h2>
+        <button class="job-history__clear-btn">${t('history.clear')}</button>
       </div>
       <div class="job-history__grid"></div>
     </div>

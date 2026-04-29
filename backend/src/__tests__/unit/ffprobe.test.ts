@@ -44,7 +44,7 @@ describe('getDuration', () => {
       mockProcess._emitClose(1);
     }, 10);
 
-    await expect(promise).rejects.toThrow('формат не поддерживается');
+    await expect(promise).rejects.toThrow('Unsupported file format');
   });
 
   it('rejects when output is not a valid number', async () => {
@@ -57,7 +57,7 @@ describe('getDuration', () => {
       mockProcess._emitClose(0);
     }, 10);
 
-    await expect(promise).rejects.toThrow('формат не поддерживается');
+    await expect(promise).rejects.toThrow('Unsupported file format');
   });
 
   it('calls spawn with correct arguments', async () => {

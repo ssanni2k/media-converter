@@ -54,7 +54,7 @@ export async function convert(
       if (!resolved) {
         resolved = true;
         ffmpeg.kill('SIGKILL');
-        reject(new Error('Превышено время ожидания конвертации'));
+        reject(new Error('Conversion timeout exceeded'));
       }
     }, timeoutMs);
 
@@ -66,7 +66,7 @@ export async function convert(
         if (!resolved) {
           resolved = true;
           ffmpeg.kill('SIGKILL');
-          reject(new Error('Конвертация зависла — нет прогресса'));
+          reject(new Error('Conversion stalled — no progress'));
         }
       }, STALL_TIMEOUT_MS);
     };
@@ -101,7 +101,7 @@ export async function convert(
       else if (code === 0) resolve();
       else {
         const stderrTail = Buffer.concat(stderrChunks).toString().slice(-500);
-        reject(new Error(`FFmpeg завершился с кодом ${code}\n${stderrTail}`));
+        reject(new Error(`FFmpeg exited with code ${code}\n${stderrTail}`));
       }
     };
 

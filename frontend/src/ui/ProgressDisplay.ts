@@ -1,22 +1,21 @@
 import '../css/ProgressDisplay.css';
 import type { JobStatus } from '../types';
 import { createDownloadButton } from './DownloadButton';
+import { t, pluralize } from '../i18n/index.js';
 
-const STATUS_CONFIG: Record<string, { label: string; icon: string }> = {
-  idle: { label: 'Готов', icon: '⏳' },
-  uploading: { label: 'Загрузка...', icon: '⬆️' },
-  waiting: { label: 'В очереди...', icon: '⏱️' },
-  active: { label: 'Конвертируется', icon: '⚙️' },
-  completed: { label: 'Готово!', icon: '✅' },
-  failed: { label: 'Ошибка', icon: '❌' },
-  cancelled: { label: 'Отменено', icon: '⚠️' },
-};
+function getStatusConfig(status: string): { label: string; icon: string } {
+  const icons: Record<string, string> = {
+    idle: '⏳', uploading: '⬆️', waiting: '⏱️', active: '⚙️',
+    completed: '✅', failed: '❌', cancelled: '⚠️',
+  };
+  return { label: t(`status.${status}`) || t('status.idle'), icon: icons[status] || icons.idle };
+}
 
 function formatWaitTime(ms: number): string {
   const seconds = Math.ceil(ms / 1000);
-  if (seconds < 60) return `${seconds} сек`;
+  if (seconds < 60) return t('progress.eta', { seconds });
   const minutes = Math.ceil(seconds / 60);
-  return `${minutes} мин`;
+  return t('progress.etaMinutes', { minutes });
 }
 
 export interface ProgressDisplayUpdate {
@@ -42,7 +41,7 @@ export function mountProgressDisplay(
     <div class="progress-display">
       <div class="progress-display__header">
         <span class="progress-display__icon">⏳</span>
-        <span class="progress-display__label">Готов</span>
+        <span class="progress-display__label">${t('status.idle')}</span>
         <span class="progress-display__connection-status" style="display:none"></span>
       </div>
       <div class="progress-display__bar">
@@ -56,9 +55,9 @@ export function mountProgressDisplay(
       <div class="progress-display__error" style="display:none"></div>
       <div class="progress-display__download-slot"></div>
       <div class="progress-display__actions">
-        <button class="progress-display__cancel-btn" style="display:none">Отменить</button>
-        <button class="progress-display__reconvert-btn" style="display:none">Конвертировать</button>
-        <button class="progress-display__reset-btn" style="display:none">Очистить</button>
+        <button class="progress-display__cancel-btn" style="display:none">${t('progress.cancel')}</button>
+        <button class="progress-display__reconvert-btn" style="display:none">${t('progress.reconvert')}</button>
+        <button class="progress-display__reset-btn" style="display:none">${t('progress.reset')}</button>
       </div>
     </div>
   `;
@@ -106,7 +105,6 @@ export function mountProgressDisplay(
 
   return {
     update({ status, progress, isConnected, estimatedTotal, conversionStartTime, queueCount, estimatedWaitMs, outputUrl, outputFileName, error }) {
-      // --- Progress bar and queue info ---
       if (status === 'waiting') {
         cancelAnimationFrame(animFrame);
         displayedProgress = 0;
@@ -115,17 +113,26 @@ export function mountProgressDisplay(
         percentage.style.display = 'none';
 
         if (queueCount !== undefined && queueCount > 0) {
-          let text = `Перед вами в очереди на конвертацию ${queueCount} ${queueCount === 1 ? 'файл' : 'файлов'}.`;
+          let text = pluralize(queueCount, 'progress.queueAhead', { count: queueCount });
           if (estimatedWaitMs && estimatedWaitMs > 0) {
-            text += ` Примерное время ожидания: ${formatWaitTime(estimatedWaitMs)}.`;
+            text += ' ' + t('progress.queueWait', { eta: formatWaitTime(estimatedWaitMs) });
           }
           queueInfo.textContent = text;
           queueInfo.style.display = '';
         } else {
-          queueInfo.textContent = 'Ваша задача в очереди на конвертацию...';
+          queueInfo.textContent = t('progress.queuePending');
           queueInfo.style.display = '';
         }
-      } else if (status === 'active' || status === 'uploading') {
+      } else if (status === 'uploading') {
+        cancelAnimationFrame(animFrame);
+        displayedProgress = 0;
+        fill.style.width = '100%';
+        queueInfo.style.display = 'none';
+        bar.style.display = '';
+        percentage.style.display = '';
+        percentage.textContent = t('progress.uploadProgress', { percent: Math.round(progress) });
+        eta.style.display = 'none';
+      } else if (status === 'active') {
         queueInfo.style.display = 'none';
         bar.style.display = '';
         percentage.style.display = '';
@@ -138,7 +145,7 @@ export function mountProgressDisplay(
           if (remaining > 0) {
             const seconds = Math.ceil(remaining / 1000);
             eta.style.display = '';
-            eta.textContent = `~${seconds} сек`;
+            eta.textContent = t('progress.eta', { seconds });
           } else {
             eta.style.display = 'none';
           }
@@ -172,7 +179,6 @@ export function mountProgressDisplay(
         eta.style.display = 'none';
       }
 
-      // --- Error text ---
       if (status === 'failed' && error) {
         errorEl.textContent = error;
         errorEl.style.display = '';
@@ -180,13 +186,11 @@ export function mountProgressDisplay(
         errorEl.style.display = 'none';
       }
 
-      // --- Download button ---
       downloadSlot.innerHTML = '';
       if (status === 'completed' && outputUrl) {
         downloadSlot.appendChild(createDownloadButton(outputUrl, outputFileName));
       }
 
-      // --- Action buttons ---
       const isProcessing = status === 'uploading' || status === 'waiting' || status === 'active';
       const isTerminal = status === 'completed' || status === 'failed' || status === 'cancelled';
 
@@ -194,25 +198,26 @@ export function mountProgressDisplay(
       reconvertBtn.style.display = isTerminal ? '' : 'none';
       resetBtn.style.display = isTerminal ? '' : 'none';
 
-      // --- Header and root class ---
       if (status !== prevStatus) {
         prevStatus = status;
-        const config = STATUS_CONFIG[status] || STATUS_CONFIG.idle;
+        const config = getStatusConfig(status);
         icon.textContent = config.icon;
         label.textContent = config.label;
 
         root.className = `progress-display progress-display--${status}`;
 
-        if (status === 'active') {
-          connectionStatus.style.display = '';
-          connectionStatus.textContent = isConnected ? '🟢 Онлайн' : '🟠 Опрос';
+        if (status === 'active' || status === 'uploading') {
+          connectionStatus.style.display = status === 'active' ? '' : 'none';
+          if (status === 'active') {
+            connectionStatus.textContent = isConnected ? t('progress.online') : t('progress.polling');
+          }
           fill.classList.add('progress-display__fill--shimmer');
         } else {
           connectionStatus.style.display = 'none';
           fill.classList.remove('progress-display__fill--shimmer');
         }
       } else if (status === 'active') {
-        connectionStatus.textContent = isConnected ? '🟢 Онлайн' : '🟠 Опрос';
+        connectionStatus.textContent = isConnected ? t('progress.online') : t('progress.polling');
       }
     },
   };

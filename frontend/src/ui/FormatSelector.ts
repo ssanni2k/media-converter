@@ -1,7 +1,8 @@
 import '../css/FormatSelector.css';
-import { SUPPORTED_FORMATS, FORMAT_INFO, CATEGORY_LABELS, getCompatibleFormats } from '../types';
+import { SUPPORTED_FORMATS, getCompatibleFormats, getFormatInfo, getCategoryLabel } from '../types';
 import type { SupportedFormat, FormatCategory } from '../types';
 import type { AppStore } from '../store/AppStore';
+import { t } from '../i18n/index.js';
 
 function buildOptionsHtml(formats: SupportedFormat[]): string {
   const groups: Record<FormatCategory, SupportedFormat[]> = {
@@ -11,7 +12,7 @@ function buildOptionsHtml(formats: SupportedFormat[]): string {
   };
 
   for (const fmt of formats) {
-    groups[FORMAT_INFO[fmt].category].push(fmt);
+    groups[getFormatInfo(fmt).category].push(fmt);
   }
 
   return (Object.entries(groups) as [FormatCategory, SupportedFormat[]][])
@@ -19,11 +20,11 @@ function buildOptionsHtml(formats: SupportedFormat[]): string {
     .map(([category, formats]) => {
       const options = formats
         .map((f) => {
-          const info = FORMAT_INFO[f];
-          return `<option value="${f}">${info.icon} ${info.label}</option>`;
+          const info = getFormatInfo(f);
+          return `<option value="${f}">${info.icon} ${info.label()}</option>`;
         })
         .join('');
-      return `<optgroup label="${CATEGORY_LABELS[category]}">${options}</optgroup>`;
+      return `<optgroup label="${getCategoryLabel(category)}">${options}</optgroup>`;
     })
     .join('');
 }
@@ -34,7 +35,7 @@ export function mountFormatSelector(container: HTMLElement, store: AppStore): ()
 
   container.innerHTML = `
     <div class="format-selector">
-      <label class="format-selector__label">Целевой формат</label>
+      <label class="format-selector__label">${t('format.label')}</label>
       <select class="format-selector__select">${optionsHtml}</select>
     </div>
   `;

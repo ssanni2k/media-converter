@@ -7,6 +7,7 @@ import { mountProgressDisplay } from './ProgressDisplay';
 import { mountJobHistory } from './JobHistory';
 import { mountAnimatedBackground } from './AnimatedBackground';
 import { mountStatsPage } from './StatsPage';
+import { t, getLocale } from '../i18n/index.js';
 
 const BUTTERFLY_SVG = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M50 50 L14 38 L6 46 L22 54 Z" fill="#209CEE"/>
@@ -24,12 +25,13 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
         <div class="header__brand">
           <span class="header__logo">${BUTTERFLY_SVG}</span>
           <div>
-            <h1 class="header__title">Сервис конвертации медиа</h1>
-            <p class="header__subtitle">Конвертируйте аудио и видео файлы в любой формат</p>
+            <h1 class="header__title">${t('app.title')}</h1>
+            <p class="header__subtitle">${t('app.subtitle')}</p>
           </div>
         </div>
         <div class="header__tabs"></div>
         <button class="animated-background__toggle">⏸</button>
+        <button class="header__lang-btn">${getLocale() === 'ru' ? 'EN' : 'RU'}</button>
       </header>
 
       <main class="main">
@@ -40,7 +42,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
 
             <div class="actions">
               <div class="action-idle">
-                <button class="convert-btn" disabled>Конвертировать</button>
+                <button class="convert-btn" disabled>${t('app.convert')}</button>
               </div>
               <div class="action-converting hidden">
                 <div class="progress-display-slot"></div>
@@ -57,7 +59,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
       </main>
 
       <footer class="footer">
-        <span class="footer__text">Сервис конвертации медиа &copy; 2026</span>
+        <span class="footer__text">${t('app.footer')}</span>
       </footer>
     </div>
   `;
@@ -117,6 +119,13 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
   const actionIdle = container.querySelector('.action-idle') as HTMLElement;
   const actionConverting = container.querySelector('.action-converting') as HTMLElement;
   const convertBtn = container.querySelector('.convert-btn') as HTMLButtonElement;
+  const langBtn = container.querySelector('.header__lang-btn') as HTMLButtonElement;
+
+  langBtn.addEventListener('click', () => {
+    const next = getLocale() === 'ru' ? 'en' : 'ru';
+    localStorage.setItem('media_converter_locale', next);
+    window.location.reload();
+  });
 
   // Conversion flow
   convertBtn.addEventListener('click', () => {

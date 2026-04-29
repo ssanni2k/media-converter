@@ -13,11 +13,11 @@ export async function processJob(jobData: JobData): Promise<void> {
   try {
     const fileStat = await stat(inputPath);
     if (fileStat.size === 0) {
-      throw new Error('Загруженный файл пуст');
+      throw new Error('Uploaded file is empty');
     }
   } catch (err) {
-    if (err instanceof Error && err.message === 'Загруженный файл пуст') throw err;
-    throw new Error('Входной файл не найден или повреждён');
+    if (err instanceof Error && err.message === 'Uploaded file is empty') throw err;
+    throw new Error('Input file not found or corrupted');
   }
 
   await mkdir(path.dirname(outputPath), { recursive: true });
@@ -75,7 +75,7 @@ export async function processJob(jobData: JobData): Promise<void> {
   } catch (error) {
     clearInterval(cancelCheck);
     if (error instanceof Error && error.message === 'CANCELLED') {
-      await setJobStatus(jobId, { status: 'cancelled', error: 'Отменено пользователем' });
+      await setJobStatus(jobId, { status: 'cancelled', error: 'Cancelled by user' });
       await publisher.publish(PROGRESS_CHANNEL, JSON.stringify({
         jobId, progress: 0, status: 'cancelled', timestamp: Date.now(),
       }));

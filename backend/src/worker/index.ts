@@ -66,7 +66,7 @@ async function cleanupStaleJobs(): Promise<void> {
     if (status && (status.status === 'active' || status.status === 'waiting')) {
       await setJobStatus(key.replace('job:', ''), {
         status: 'failed',
-        error: 'Воркер перезапущен — задача не завершена',
+        error: 'Worker restarted — job not completed',
       });
       await removeJob(key.replace('job:', ''));
       logger.info({ jobId: key }, 'Cleaned up stale job');

@@ -50,7 +50,7 @@ export default async function convertRoute(fastify: any) {
       }
     } catch (error) {
       await cleanup();
-      const message = error instanceof Error ? error.message : 'Ошибка загрузки файла';
+      const message = error instanceof Error ? error.message : 'File upload failed';
       return reply.status(500).send({ error: message });
     }
 
@@ -65,13 +65,13 @@ export default async function convertRoute(fastify: any) {
       fileSize = fileStat.size;
     } catch {
       await cleanup();
-      return reply.status(500).send({ error: 'Не удалось определить размер файла' });
+      return reply.status(500).send({ error: 'Failed to determine file size' });
     }
 
     if (fileSize > config.limits.maxFileSize) {
       await cleanup();
       return reply.status(413).send({
-        error: `Размер файла превышает лимит в ${config.limits.maxFileSizeMb} МБ`,
+        error: `File size exceeds the ${config.limits.maxFileSizeMb} MB limit`,
       });
     }
 
@@ -87,7 +87,7 @@ export default async function convertRoute(fastify: any) {
       const compatible = getCompatibleFormats(sourceFormat).map(f => f.toUpperCase());
       await cleanup();
       return reply.status(400).send({
-        error: `Невозможно конвертировать ${sourceFormat.toUpperCase()} в ${format.toUpperCase()}. Доступные форматы: ${compatible.join(', ')}`,
+        error: `Cannot convert ${sourceFormat.toUpperCase()} to ${format.toUpperCase()}. Available formats: ${compatible.join(', ')}`,
       });
     }
 
