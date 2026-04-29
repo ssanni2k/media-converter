@@ -30,8 +30,13 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
           </div>
         </div>
         <div class="header__tabs"></div>
-        <button class="animated-background__toggle">⏸</button>
-        <button class="header__lang-btn">${getLocale() === 'ru' ? 'EN' : 'RU'}</button>
+        <div class="header__controls">
+          <div class="header__lang-switch">
+            <button class="header__lang-option ${getLocale() === 'ru' ? 'header__lang-option--active' : ''}" data-lang="ru">RU</button>
+            <button class="header__lang-option ${getLocale() === 'en' ? 'header__lang-option--active' : ''}" data-lang="en">EN</button>
+          </div>
+          <button class="animated-background__toggle" aria-label="Toggle animation">⏸</button>
+        </div>
       </header>
 
       <main class="main">
@@ -119,12 +124,16 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
   const actionIdle = container.querySelector('.action-idle') as HTMLElement;
   const actionConverting = container.querySelector('.action-converting') as HTMLElement;
   const convertBtn = container.querySelector('.convert-btn') as HTMLButtonElement;
-  const langBtn = container.querySelector('.header__lang-btn') as HTMLButtonElement;
+  const langOptions = container.querySelectorAll<HTMLButtonElement>('.header__lang-option');
 
-  langBtn.addEventListener('click', () => {
-    const next = getLocale() === 'ru' ? 'en' : 'ru';
-    localStorage.setItem('media_converter_locale', next);
-    window.location.reload();
+  langOptions.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      if (lang && lang !== getLocale()) {
+        localStorage.setItem('media_converter_locale', lang);
+        window.location.reload();
+      }
+    });
   });
 
   // Conversion flow
