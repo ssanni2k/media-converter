@@ -259,7 +259,7 @@ CSS-селекторы для всех UI-элементов. Используе
 
 Через `shouldSkipConversion(source, target)` из `helpers/compatibility.ts`:
 - Самоконвертация (source === target)
-- Аудио → видео (audio-only форматы в video-форматы)
+- Аудио → видео (audio-only форматы в video-форматы и контейнеры, требующие видео-кодек: mp4, webm, mov, avi, flv, mkv, ts, mxf, asf)
 - MXF в любом направлении (тестовые файлы не содержат видеопоток)
 
 ### API-тесты (`tests/formats/api/`)

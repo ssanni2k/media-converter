@@ -11,11 +11,12 @@
 - Отслеживание прогресса в реальном времени (SSE + polling fallback)
 - Webhook уведомления о завершении конвертации
 - История конвертаций (сохраняется в localStorage, max 20)
+- Отмена конвертации из прогресс-бара и из карточки очереди
 - Адаптивный тёмный UI с neumorphism эффектами и анимированным фоном
-- Страница статистики с данными о задачах и очереди
+- Страница статистики с данными о задачах и очереди, Chart.js графики
+- Интернационализация (русский / английский), переключатель в шапке
 - Rate limiting запросов
 - Автоматическая очистка старых файлов (cron, 24ч)
-- Отмена конвертации в процессе
 
 ## Архитектура
 
@@ -65,11 +66,11 @@ media-processing/
 ├── backend/                  # Node.js бэкенд (Fastify + FFmpeg)
 │   ├── src/
 │   │   ├── api/                  # REST API сервер
-│   │   │   ├── index.ts          # Fastify: middleware, CORS, rate limit
+│   │   │   ├── index.ts          # Fastify: CORS, rate limit, multipart
 │   │   │   └── routes/
 │   │   │       ├── convert.ts    # POST /convert — загрузка, валидация, очередь
 │   │   │       ├── status.ts     # GET /jobs/:id — статус задачи
-│   │   │       ├── cancel.ts     # POST /jobs/:id/cancel — отмена задачи
+│   │   │       ├── cancel.ts     # POST /jobs/:id/cancel — отмена задачи + pub/sub
 │   │   │       ├── events.ts     # GET /events/:id — SSE прогресс
 │   │   │       ├── stats.ts      # GET /stats — статистика (кэш 5с)
 │   │   │       └── stats-events.ts # GET /stats/stream — SSE обновления статистики
@@ -96,21 +97,25 @@ media-processing/
 │   │   ├── api/
 │   │   │   ├── conversionApi.ts  # API клиент (XHR, SSE)
 │   │   │   └── statsApi.ts       # API клиент статистики
+│   │   ├── i18n/
+│   │   │   ├── index.ts          # Локализация, pluralize, localizeError
+│   │   │   ├── ru.ts             # Русские переводы
+│   │   │   └── en.ts             # Английские переводы
 │   │   ├── store/
-│   │   │   ├── EventEmitter.ts   # Типизированный EventEmitter
+│   │   │   ├── EventEmitter.ts    # Типизированный EventEmitter
 │   │   │   ├── AppStore.ts       # Основное состояние приложения
 │   │   │   └── JobHistoryStore.ts # localStorage история
 │   │   ├── ui/                    # UI компоненты
 │   │   │   ├── App.ts            # Корневой компонент
+│   │   │   ├── TabBar.ts         # Навигация между вкладками
 │   │   │   ├── FileUpload.ts     # Загрузка файлов
 │   │   │   ├── FormatSelector.ts # Выбор формата
 │   │   │   ├── ProgressDisplay.ts# Прогресс и действия
 │   │   │   ├── JobCard.ts        # Карточка задачи
+│   │   │   ├── JobQueue.ts       # Карточки очереди с отменой
 │   │   │   ├── JobHistory.ts     # История конвертаций
-│   │   │   ├── JobQueue.ts       # Отображение очереди
 │   │   │   ├── DownloadButton.ts # Кнопка скачивания
 │   │   │   ├── StatsPage.ts      # Страница статистики
-│   │   │   ├── TabBar.ts         # Навигация между вкладками
 │   │   │   └── AnimatedBackground.ts # Canvas анимация
 │   │   ├── css/                  # Стили компонентов
 │   │   └── types.ts              # Типы + форматные константы
@@ -123,9 +128,68 @@ media-processing/
 └── package.json              # Root: workspaces, скрипты
 ```
 
-## Быстрый старт
+## Развёртывание
 
-### Docker (рекомендуется)
+### Требования
+
+| Зависимость | Версия | Назначение |
+|-------------|--------|-----------|
+| Node.js     | ≥ 22   | Серверная часть и сборка |
+| Redis       | ≥ 7    | Очередь задач, статусы, pub/sub |
+| FFmpeg      | ≥ 4.0  | Конвертация медиафайлов |
+| npm         | ≥ 10   | Менеджер пакетов |
+
+### Установка зависимостей
+
+#### macOS
+
+```bash
+brew install node ffmpeg redis
+brew services start redis
+```
+
+#### Ubuntu / Debian
+
+```bash
+sudo apt update
+sudo apt install -y nodejs npm ffmpeg redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+```
+
+#### Windows (WSL2)
+
+```bash
+# Node.js
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# FFmpeg
+sudo apt install -y ffmpeg
+
+# Redis
+sudo apt install -y redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+```
+
+#### Arch Linux
+
+```bash
+sudo pacman -S nodejs npm ffmpeg redis
+sudo systemctl enable redis
+sudo systemctl start redis
+```
+
+#### Проверка
+
+```bash
+node --version    # v22+
+redis-cli ping    # PONG
+ffmpeg -version   # ffmpeg version 4+
+```
+
+### Docker (рекомендуется для продакшена)
 
 ```bash
 docker compose up --build -d
@@ -134,24 +198,39 @@ docker compose up --build -d
 # API: http://localhost:3000
 ```
 
+Docker-образ бэкенда включает FFmpeg (`node:22-bookworm-slim` + `apt-get install ffmpeg`). Redis запускается отдельным контейнером с персистентным хранилищем.
+
 ### Локальная разработка
 
 ```bash
-# Зависимости
+# Установка Node-зависимостей
 npm install
 
-# Требуется FFmpeg
-brew install ffmpeg    # macOS
-# sudo apt install ffmpeg  # Linux
+# Запуск Redis (один из вариантов):
+docker compose up -d redis          # Docker
+# или redis-server                   # Если установлен локально
 
-# Запуск Redis
-docker compose up -d redis
+# Сборка бэкенда
+npm run dev:backend                  # API + Worker через tsx watch
 
-# Запуск API + Worker + Frontend (одной командой)
-npm run dev
+# В отдельном терминале — фронтенд
+npm run dev:frontend                 # Vite dev-сервер на :5173
+
+# Или всё одной командой:
+npm run dev                          # API + Worker + Frontend через concurrently
 ```
 
 `npm run dev` запускает всё через concurrently: API-сервер, воркеры и Vite dev-сервер. Перед запуском `predev`-скрипт освобождает порты 3000 и 5173.
+
+### Сборка для продакшена
+
+```bash
+# Бэкенд
+cd backend && npm run build          # tsc → dist/
+
+# Фронтенд
+cd frontend && npm run build          # tsc + vite build → dist/
+```
 
 ---
 
@@ -207,7 +286,7 @@ curl -X POST http://localhost:3000/convert \
 
 ### POST /jobs/:id/cancel
 
-Отмена задачи в процессе.
+Отмена задачи. Завершённые задачи (completed/failed/cancelled) нельзя отменить (400). При успешной отмене публикуются события в Redis-каналы `job-progress` и `stats-changed`, что обеспечивает мгновенное обновление всех SSE-клиентов.
 
 **Response (200):**
 ```json
@@ -274,7 +353,7 @@ SSE для обновлений статистики в реальном вре�
 }
 ```
 
-**Retry логика:** до 3 попыток с exponential backoff (1s, 2s, 4s). Webhook не блокирует завершение джоба (fire-and-forget). Таймаут запроса: 10с.
+**Retry логика:** до 3 попыток с exponential backoff (1с, 2с, 4с). Webhook не блокирует завершение джоба (fire-and-forget). Таймаут запроса: 10с.
 
 ---
 
@@ -287,7 +366,7 @@ SSE для обновлений статистики в реальном вре�
 | MP3    | libmp3lame   | MPEG Audio Layer III       |
 | WAV    | pcm_s16le    | PCM 16-bit uncompressed    |
 | FLAC   | flac         | Free Lossless Audio Codec  |
-| OGG    | libvorbis    | Vorbis audio               |
+| OGG    | libopus      | Opus audio                 |
 | AAC    | aac          | Advanced Audio Coding (ADTS) |
 | WMA    | wmav2        | Windows Media Audio 2      |
 | AC3    | ac3          | Dolby Digital (AC-3)       |
@@ -301,19 +380,14 @@ SSE для обновлений статистики в реальном вре�
 | MOV    | libx264     | aac         | QuickTime      |
 | AVI    | libx264     | mp3         | Audio Video Interleave |
 | FLV    | libx264     | aac         | Flash Video    |
-
-### Контейнеры
-
-| Формат | Видео кодек   | Аудио кодек | Описание        |
-|--------|--------------|-------------|-----------------|
-| MKV    | libx264      | aac         | Matroska        |
-| TS     | libx264      | aac         | MPEG-TS         |
+| MKV    | libx264     | aac         | Matroska        |
+| TS     | libx264     | aac         | MPEG-TS         |
 | MXF    | mpeg2video   | pcm_s16le   | Material eXchange Format |
 | ASF    | libx264      | wmav2       | Advanced Systems Format |
 
 ### Совместимость
 
-Аудио-форматы (MP3, WAV, FLAC, OGG, AAC, WMA, AC3) нельзя конвертировать в видео-форматы (MP4, WebM, MOV, AVI, FLV, TS, MXF). Самоконвертация (формат → тот же формат) также недоступна.
+Аудио-форматы (MP3, WAV, FLAC, OGG, AAC, WMA, AC3) нельзя конвертировать в видео-форматы и контейнеры (MP4, WebM, MOV, AVI, FLV, MKV, TS, MXF, ASF). Самоконвертация (формат → тот же формат) также недоступна.
 
 ---
 
@@ -350,10 +424,11 @@ SSE для обновлений статистики в реальном вре�
 ## Добавление нового формата
 
 1. Добавить кодеки в `src/worker/ffmpeg.ts` → `FORMAT_CODECS`
-2. Добавить формат в `frontend/src/types.ts` → `SUPPORTED_FORMATS` и `FORMAT_INFO`
-3. При необходимости обновить `src/shared/compatibility.ts` — список аудио/видео форматов
-4. Генерировать тестовый файл в `e2e/test-data/`
-5. Добавить путь в `e2e/helpers/test-media.ts`
+2. Добавить формат в `frontend/src/types.ts` → `SUPPORTED_FORMATS`, `FORMAT_CATEGORIES`, `FORMAT_ICONS`
+3. При необходимости обновить `src/shared/compatibility.ts` и `frontend/src/types.ts` → `VIDEO_FORMATS` / `REQUIRES_VIDEO`
+4. Добавить переводы в `frontend/src/i18n/ru.ts` и `en.ts` → `format.{name}`
+5. Генерировать тестовый файл в `e2e/test-data/`
+6. Добавить путь в `e2e/helpers/test-media.ts`
 
 ## Документация
 

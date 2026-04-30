@@ -1,5 +1,5 @@
 const AUDIO_ONLY = new Set(['mp3', 'wav', 'flac', 'ogg', 'aac', 'wma', 'ac3']);
-const VIDEO_FORMATS = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf']);
+const VIDEO_FORMATS = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'ts', 'mxf', 'asf']);
 
 export function shouldSkipConversion(source: string, target: string): boolean {
   if (source === target) return true;

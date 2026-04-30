@@ -32,7 +32,7 @@ src/
 │       └── stats-events.ts # GET /stats/stream (SSE)
 ├── worker/
 │   ├── index.ts          # Запуск воркеров
-│   ├── processor.ts      # Обработка задачи
+│   ├── processor.ts      # Обработка задачи, статусы, webhook
 │   ├── ffmpeg.ts         # FFmpeg обёртка
 │   ├── ffprobe.ts        # Анализ длительности
 │   └── webhook.ts        # Webhook с retry
@@ -57,7 +57,6 @@ Fastify-сервер с зарегистрированными плагинам�
 - `@fastify/rate-limit` — ограничение запросов (100/мин по умолчанию)
 - `@fastify/multipart` — приём multipart/form-data загрузок
 - `@fastify/static` — раздача файлов из `data/outputs/`
-- `@fastify/sensible` — утилиты HTTP-ответов
 
 ### POST /convert (`routes/convert.ts`)
 
@@ -81,7 +80,11 @@ Fastify-сервер с зарегистрированными плагинам�
 
 ### POST /jobs/:id/cancel (`routes/cancel.ts`)
 
-Проверяет существование задачи и текущий статус. Если задача уже завершена (completed/failed/cancelled) — возвращает ошибку. Иначе устанавливает статус `cancelled`. Воркер проверяет статус каждую секунду и прерывает конвертацию.
+Проверяет существование задачи и текущий статус. Если задача уже завершена (completed/failed/cancelled) — возвращает ошибку 400. Иначе:
+1. Устанавливает статус `cancelled` в Redis
+2. Удаляет задачу из очереди
+3. Публикует событие `cancelled` в `job-progress` (для обновления SSE-клиентов)
+4. Публикует событие в `stats-changed` (для обновления страницы статистики)
 
 ### GET /events/:id (`routes/events.ts`)
 
@@ -133,7 +136,7 @@ SSE-подписка на канал `stats-changed`. Отправляет `{"ch
 
 **`releaseWorkerJobs`** — сканирует список, находит все задачи с указанным `assignedWorker` и статусом `assigned`, сбрасывает в `waiting` с `assignedWorker: null`. Используется при падении воркера.
 
-**`removeJob`** — удаляет задачу из списка по `jobId`. Вызывается после завершения обработки.
+**`removeJob`** — удаляет задачу из списка по `jobId`. Вызывается при завершении обработки или отмене.
 
 ### Функции
 
@@ -166,14 +169,15 @@ SSE-подписка на канал `stats-changed`. Отправляет `{"ch
 `processJob(jobData)` — полный цикл обработки задачи:
 
 1. Проверка существования и непустоты входного файла
-2. Создание директории вывода
+2. Проверка статуса отмены перед запуском (если уже `cancelled` — выход)
 3. Установка статуса `active` в Redis
-4. Запуск проверки отмены каждую секунду (интервал 1с)
+4. Запуск проверки отмены каждые 200мс (polling Redis-статуса + `cancelSignal` для FFmpeg)
 5. Вызов `convert()` из `ffmpeg.ts` с callback прогресса
 6. При каждом обновлении прогресса — публикация в `job-progress` и обновление статуса в Redis
-7. По завершении — установка статуса `completed`, отправка webhook (если указан)
+7. По завершении — установка статуса `completed`, публикация события, отправка webhook
 8. При ошибке — установка статуса `failed`, публикация события
-9. При отмене — установка статуса `cancelled`
+9. При отмене — установка статуса `cancelled`, публикация события
+10. `finally` — очистка интервала проверки отмены
 
 **Статусы задачи** хранятся в Redis-хеше `job:{jobId}` с TTL 26 часов.
 
@@ -184,7 +188,8 @@ SSE-подписка на канал `stats-changed`. Отправляет `{"ch
 - Выбор кодеков по целевому формату из `FORMAT_CODECS`
 - Определение длительности через ffprobe для расчёта прогресса
 - Парсинг stdout FFmpeg для извлечения прогресса (`out_time_ms=` через `-progress pipe:1`)
-- Защита от зависания: динамический таймаут (от 60с до 5 мин, зависит от длительности файла), детектор застоя (30с без прогресса)
+- Защита от зависания: таймаут (от 60с до 5 мин, зависит от длительности файла), детектор застоя (30с без прогресса)
+- `cancelSignal` — флаг `aborted`, проверяемый в callback прогресса; при `true` процесс убивается через `kill()`
 - Ограничение памяти stderr (64 КБ)
 
 ### Webhook (`webhook.ts`)
@@ -199,9 +204,8 @@ SSE-подписка на канал `stats-changed`. Отправляет `{"ch
 
 Определяет допустимые направления конвертации:
 
-- Аудио-форматы (mp3, wav, flac, ogg, aac, wma, ac3) нельзя конвертировать в видео-форматы (mp4, webm, mov, avi, flv, ts, mxf)
+- Аудио-форматы (mp3, wav, flac, ogg, aac, wma, ac3) нельзя конвертировать в видео-форматы и контейнеры, требующие видео-кодек (mp4, webm, mov, avi, flv, mkv, ts, mxf, asf)
 - Самоконвертация заблокирована
-- Контейнеры (mkv, asf) доступны из любого формата
 
 Функции: `getSourceFormat(filename)`, `canConvert(source, target)`, `getCompatibleFormats(source)`.
 
@@ -226,11 +230,18 @@ node-cron задача, запускаемая каждые 5 минут:
 
 Все настройки читаются из переменных окружения с дефолтными значениями. См. полный список в README.md.
 
+## Пути к FFmpeg (`src/config/paths.ts`)
+
+Определяет пути к `ffmpeg` и `ffprobe`:
+1. Переменные окружения `FFMPEG_PATH` и `FFPROBE_PATH`
+2. Популярные пути установки (`/usr/bin/ffmpeg`, `/usr/local/bin/ffmpeg`, и т.д.)
+3. Fallback с использованием `which`
+
 ## Docker
 
-Мulti-stage Dockerfile:
+Multi-stage Dockerfile:
 1. `deps` — установка production-зависимостей
 2. `builder` — установка всех зависимостей, сборка TypeScript
-3. `final` — slim Node.js 22 + FFmpeg, копирование dist и production node_modules
+3. `final` — slim Node.js 22 + FFmpeg (через `apt-get install`), копирование dist и production node_modules
 
 В docker-compose.yml запускаются 5 сервисов: redis, api, frontend, worker, cleanup.
