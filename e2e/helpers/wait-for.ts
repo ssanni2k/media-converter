@@ -1,33 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { s } from './selectors';
 
-const STATUS_LABELS: Record<string, string> = {
-  uploading: 'Загрузка...',
-  waiting: 'В очереди...',
-  active: 'Конвертируется',
-  completed: 'Готово!',
-  failed: 'Ошибка',
-};
-
-export async function waitForProgressStatus(
-  page: Page,
-  status: string,
-  timeout = 60_000
-) {
-  await expect(page.locator(s.progressDisplayLabel))
-    .toHaveText(STATUS_LABELS[status], { timeout });
-}
-
-export async function waitForConnectionIndicator(
-  page: Page,
-  timeout = 20_000
-) {
-  const el = page.locator(s.progressDisplayConnectionStatus);
-  await expect(el).toBeVisible({ timeout });
-  const text = await el.textContent();
-  expect(text).toMatch(/🟢 Онлайн|🟠 Опрос/);
-}
-
 export async function uploadAndWaitForCompletion(
   page: Page,
   filePath: string,

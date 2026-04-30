@@ -87,7 +87,7 @@ export function getCategoryLabel(category: FormatCategory): string {
 }
 
 const AUDIO_ONLY_FORMATS = new Set(['mp3', 'wav', 'flac', 'ogg', 'aac', 'wma', 'ac3']);
-const VIDEO_FORMATS = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf']);
+const VIDEO_FORMATS = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf', 'asf']);
 
 export function getCompatibleFormats(sourceFormat: string): SupportedFormat[] {
   if (!AUDIO_ONLY_FORMATS.has(sourceFormat)) {

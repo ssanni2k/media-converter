@@ -80,7 +80,6 @@ export async function processJob(jobData: JobData): Promise<void> {
       sendWebhook(webhookUrl, jobId, format, outputUrl).catch(() => {});
     }
   } catch (error) {
-    clearInterval(cancelCheck);
     if (error instanceof Error && error.message === 'CANCELLED') {
       await setJobStatus(jobId, { status: 'cancelled', error: 'Cancelled by user' });
       await publisher.publish(PROGRESS_CHANNEL, JSON.stringify({
@@ -99,9 +98,9 @@ export async function processJob(jobData: JobData): Promise<void> {
       jobId, progress: 0, status: 'failed', timestamp: Date.now(),
     }));
     publisher.publish(STATS_CHANNEL, '1').catch(() => {});
+  } finally {
+    clearInterval(cancelCheck);
   }
-
-  clearInterval(cancelCheck);
 }
 
 export async function setJobStatus(jobId: string, status: Partial<JobStatus>): Promise<void> {

@@ -14,9 +14,9 @@ export const createSubscriber = () => new Redis({
 export const PROGRESS_CHANNEL = 'job-progress';
 export const STATS_CHANNEL = 'stats-changed';
 
-export const QUEUE_CHANNEL_HIGH = 'queue:new-job:high';
-export const QUEUE_CHANNEL_MEDIUM = 'queue:new-job:medium';
-export const QUEUE_CHANNEL_LOW = 'queue:new-job:low';
+const QUEUE_CHANNEL_HIGH = 'queue:new-job:high';
+const QUEUE_CHANNEL_MEDIUM = 'queue:new-job:medium';
+const QUEUE_CHANNEL_LOW = 'queue:new-job:low';
 
 export const QUEUE_CHANNELS: Record<string, string> = {
   high: QUEUE_CHANNEL_HIGH,

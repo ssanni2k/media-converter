@@ -119,7 +119,6 @@ export default {
     workerRestarted: 'Worker restarted — job not completed',
     unknown: 'Unknown error',
     network: 'Network error',
-    upload: 'File upload error',
     cancelled: 'Cancelled',
     uploadStalled: 'Upload stalled — no progress for 5 minutes',
     sseParseError: 'Failed to parse data',

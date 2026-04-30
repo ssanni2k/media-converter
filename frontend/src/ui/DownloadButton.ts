@@ -20,6 +20,8 @@ export function createDownloadButton(outputUrl: string, fileName?: string): HTML
       btn.innerHTML = `<span class="download-btn__icon">⏳</span><span>${t('download.loading')}</span>`;
 
       const response = await fetch(fullUrl);
+      if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+
       const blob = await response.blob();
 
       const url = window.URL.createObjectURL(blob);

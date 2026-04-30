@@ -21,7 +21,3 @@ export function createMockChildProcess() {
 
   return mockProcess;
 }
-
-export function mockSpawn(mockProcess: ReturnType<typeof createMockChildProcess>) {
-  return vi.fn(() => mockProcess);
-}

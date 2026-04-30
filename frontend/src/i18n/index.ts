@@ -12,8 +12,6 @@ const SUPPORTED_LOCALES = ['ru', 'en'];
 
 let currentLocale = DEFAULT_LOCALE;
 
-const listeners = new Set<() => void>();
-
 try {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && SUPPORTED_LOCALES.includes(stored)) {
@@ -123,7 +121,4 @@ export function setLocale(locale: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, locale);
   } catch {}
-  for (const fn of listeners) {
-    fn();
-  }
 }
