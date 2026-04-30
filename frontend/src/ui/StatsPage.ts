@@ -2,6 +2,7 @@ import '../css/StatsPage.css';
 import { getStats, subscribeStatsChanges, type StatsResponse } from '../api/statsApi';
 import { mountJobQueue } from './JobQueue';
 import { t, getLocale } from '../i18n/index.js';
+import type { JobStatus } from '../types';
 
 declare const Chart: any;
 
@@ -106,7 +107,7 @@ export function mountStatsPage(container: HTMLElement, onJobCancelled?: (jobId: 
     // Update queue with active jobs from server
     const activeJobs = data.recentJobs
       .filter(j => j.status === 'active' || j.status === 'waiting')
-      .map(j => ({ ...j, createdAt: parseInt(j.createdAt) || Date.now() }));
+      .map(j => ({ ...j, status: j.status as JobStatus, createdAt: parseInt(j.createdAt) || Date.now() }));
     queue.update(activeJobs);
 
     // Charts

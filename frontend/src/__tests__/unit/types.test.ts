@@ -86,6 +86,7 @@ describe('getCompatibleFormats', () => {
     expect(formats).not.toContain('mp4');
     expect(formats).not.toContain('webm');
     expect(formats).not.toContain('mov');
+    expect(formats).not.toContain('mkv');
     expect(formats).toContain('wav');
     expect(formats).toContain('flac');
   });

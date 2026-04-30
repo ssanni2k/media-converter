@@ -76,7 +76,7 @@ export function mountJobQueue(container: HTMLElement, onJobCancelled?: (jobId: s
               targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
               status: status.status,
               progress: status.progress,
-              createdAt: parseInt(card.querySelector('.job-card__timestamp')?.dataset.ts || '0') || Date.now(),
+              createdAt: parseInt((card.querySelector('.job-card__timestamp') as HTMLElement | null)?.dataset?.ts || '0') || Date.now(),
             });
           }
         } catch {
@@ -100,7 +100,7 @@ export function mountJobQueue(container: HTMLElement, onJobCancelled?: (jobId: s
           targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
           status: status.status,
           progress: status.progress,
-          createdAt: parseInt(card.querySelector('.job-card__timestamp')?.dataset.ts || '0') || Date.now(),
+          createdAt: parseInt((card.querySelector('.job-card__timestamp') as HTMLElement | null)?.dataset?.ts || '0') || Date.now(),
         });
       }
     } catch {
@@ -129,7 +129,7 @@ export function mountJobQueue(container: HTMLElement, onJobCancelled?: (jobId: s
           await refreshJob(jobId);
           onJobCancelled?.(jobId);
         });
-        const tsEl = card.querySelector('.job-card__timestamp');
+        const tsEl = card.querySelector('.job-card__timestamp') as HTMLElement | null;
         if (tsEl) tsEl.dataset.ts = String(job.createdAt);
         grid.appendChild(card);
         cardMap.set(job.jobId, card);

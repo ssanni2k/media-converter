@@ -5,7 +5,7 @@ import { getStats } from '../api/statsApi';
 import { localizeError, t } from '../i18n/index.js';
 import type { JobStatus, SupportedFormat, JobHistoryItem } from '../types';
 
-export interface ConversionState {
+interface ConversionState {
   status: JobStatus | 'uploading' | 'idle';
   progress: number;
   estimatedTotal?: number;
@@ -18,7 +18,6 @@ export interface ConversionState {
 
 interface AppEvents {
   'file:change': File | null;
-  'format:change': SupportedFormat;
   'sourceFormat:change': string | null;
   'conversion:change': ConversionState & { isConnected: boolean; estimatedTotal?: number; conversionStartTime?: number };
   'history:change': JobHistoryItem[];
@@ -96,7 +95,6 @@ export class AppStore {
 
   setSelectedFormat(format: SupportedFormat): void {
     this.selectedFormat = format;
-    this.emitter.emit('format:change', format);
   }
 
   get history(): JobHistoryItem[] {

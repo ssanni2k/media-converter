@@ -1,7 +1,7 @@
 import { FORMAT_CODECS } from '../worker/ffmpeg.js';
 
 const AUDIO_ONLY = new Set(['mp3', 'wav', 'flac', 'ogg', 'aac', 'wma', 'ac3']);
-const REQUIRES_VIDEO = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf', 'asf']);
+const REQUIRES_VIDEO = new Set(['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'ts', 'mxf', 'asf']);
 
 export function getSourceFormat(filename: string): string | null {
   const ext = filename.split('.').pop()?.toLowerCase();

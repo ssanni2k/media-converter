@@ -52,10 +52,11 @@ describe('canConvert', () => {
   it('returns true for video to video', () => {
     expect(canConvert('mp4', 'webm')).toBe(true);
     expect(canConvert('webm', 'mkv')).toBe(true);
+    expect(canConvert('mp4', 'mkv')).toBe(true);
   });
 
-  it('returns true for audio to container', () => {
-    expect(canConvert('mp3', 'mkv')).toBe(true);
+  it('returns false for audio-only to mkv (requires video)', () => {
+    expect(canConvert('mp3', 'mkv')).toBe(false);
   });
 });
 
@@ -69,6 +70,7 @@ describe('getCompatibleFormats', () => {
     const formats = getCompatibleFormats('mp3');
     expect(formats).not.toContain('mp4');
     expect(formats).not.toContain('webm');
+    expect(formats).not.toContain('mkv');
     expect(formats).toContain('wav');
   });
 

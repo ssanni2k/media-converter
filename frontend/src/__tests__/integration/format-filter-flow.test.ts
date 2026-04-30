@@ -4,16 +4,15 @@ import { getCompatibleFormats } from '../../types';
 describe('format-filter-flow integration', () => {
   it('audio file filters out video formats', () => {
     const formats = getCompatibleFormats('mp3');
-    const videoFormats = ['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf', 'asf'];
+    const videoFormats = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'ts', 'mxf', 'asf'];
 
     for (const vf of videoFormats) {
       expect(formats).not.toContain(vf);
     }
 
-    // But should include other audio and containers
+    // But should include other audio
     expect(formats).toContain('wav');
     expect(formats).toContain('flac');
-    expect(formats).toContain('mkv');
   });
 
   it('video file shows all formats except source', () => {
@@ -52,7 +51,7 @@ describe('format-filter-flow integration', () => {
       expect(formats.length).toBeGreaterThan(0);
 
       // None should be video-only
-      const videoFormats = ['mp4', 'webm', 'mov', 'avi', 'flv', 'ts', 'mxf', 'asf'];
+      const videoFormats = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'ts', 'mxf', 'asf'];
       for (const vf of videoFormats) {
         expect(formats).not.toContain(vf);
       }

@@ -93,12 +93,9 @@ describe('AppStore', () => {
     expect(listener).toHaveBeenCalledWith(file);
   });
 
-  it('emits format:change event on setSelectedFormat', () => {
-    const listener = vi.fn();
-    store.on('format:change', listener);
-
+  it('setSelectedFormat updates format', () => {
     store.setSelectedFormat('wav');
-    expect(listener).toHaveBeenCalledWith('wav');
+    expect(store.selectedFormat).toBe('wav');
   });
 
   it('startConversion transitions to uploading then waiting', async () => {

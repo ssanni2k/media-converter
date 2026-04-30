@@ -1,5 +1,4 @@
 import Fastify from 'fastify';
-import sensible from '@fastify/sensible';
 import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import cors from '@fastify/cors';
@@ -17,7 +16,6 @@ const fastify = Fastify({
   logger: { level: 'info' },
 });
 
-await fastify.register(sensible);
 await fastify.register(cors, {
   origin: true,
   credentials: true,

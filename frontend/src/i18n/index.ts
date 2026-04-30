@@ -114,11 +114,3 @@ export function getLocale(): string {
   return currentLocale;
 }
 
-export function setLocale(locale: string): void {
-  if (!SUPPORTED_LOCALES.includes(locale)) return;
-  if (locale === currentLocale) return;
-  currentLocale = locale;
-  try {
-    localStorage.setItem(STORAGE_KEY, locale);
-  } catch {}
-}

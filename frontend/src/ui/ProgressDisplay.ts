@@ -18,7 +18,7 @@ function formatWaitTime(ms: number): string {
   return t('progress.etaMinutes', { minutes });
 }
 
-export interface ProgressDisplayUpdate {
+interface ProgressDisplayUpdate {
   status: JobStatus | 'uploading' | 'idle';
   progress: number;
   isConnected?: boolean;

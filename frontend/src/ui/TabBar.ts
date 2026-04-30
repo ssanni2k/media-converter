@@ -18,7 +18,7 @@ export function mountTabBar(
   container: HTMLElement,
   onTabChange: (tabId: TabId) => void,
   initialTab: TabId = 'converter'
-): { setTab: (tabId: TabId) => void } {
+): void {
   container.innerHTML = `
     <nav class="tab-bar">
       ${TABS.map(t => `
@@ -42,6 +42,4 @@ export function mountTabBar(
   buttons.forEach(btn => {
     btn.addEventListener('click', () => setTab(btn.dataset.tab as TabId));
   });
-
-  return { setTab };
 }
