@@ -50,11 +50,11 @@ test('individual job removal', async ({ page }) => {
   await uploadAndWaitForCompletion(page, media.wav, 'flac');
   await clearConverter(page);
 
-  await expect(page.locator(s.jobCard)).toHaveCount(2);
+  await waitForHistoryCardCount(page, 2);
 
   // Remove first card
   await page.locator(s.jobCard).first().locator(s.jobCardRemoveBtn).click();
-  await expect(page.locator(s.jobCard)).toHaveCount(1);
+  await waitForHistoryCardCount(page, 1);
 });
 
 test('clear all history', async ({ page }) => {
@@ -68,7 +68,7 @@ test('clear all history', async ({ page }) => {
   await uploadAndWaitForCompletion(page, media.wav, 'ogg');
   await clearConverter(page);
 
-  await expect(page.locator(s.jobCard)).toHaveCount(2);
+  await waitForHistoryCardCount(page, 2);
 
   await page.locator(s.jobHistoryClearBtn).click();
 

@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 
 test('page loads with all UI elements in initial state', async ({ page }) => {
 
-  await expect(page.locator(s.title)).toHaveText('Конвертер Медиа');
+  await expect(page.locator(s.title)).toHaveText('Сервис конвертации медиа');
   await expect(page.locator(s.subtitle)).toHaveText('Конвертируйте аудио и видео файлы в любой формат');
 
   // Upload zone

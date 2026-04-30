@@ -57,6 +57,8 @@ export async function clearConverter(page: Page): Promise<void> {
 }
 
 export async function clearLocalStorage(page: Page) {
+  // Navigate away first to ensure a clean page context
+  await page.goto('about:blank');
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -64,5 +66,6 @@ export async function clearLocalStorage(page: Page) {
 }
 
 export async function waitForHistoryCardCount(page: Page, count: number, timeout = 15_000) {
-  await expect(page.locator(`${s.jobHistoryGrid} ${s.jobCard}`)).toHaveCount(count, { timeout });
+  // Exclude cards that are animating out (fade-leave class)
+  await expect(page.locator(`${s.jobHistoryGrid} ${s.jobCard}:not(.fade-leave)`)).toHaveCount(count, { timeout });
 }

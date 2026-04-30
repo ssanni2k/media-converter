@@ -6,6 +6,9 @@ import { sendWebhook } from './webhook.js';
 import { mkdir, stat } from 'fs/promises';
 import path from 'path';
 import { config } from '../config/index.js';
+import pino from 'pino';
+
+const logger = pino({ level: 'info' });
 
 export async function processJob(jobData: JobData): Promise<void> {
   const { jobId, inputPath, outputPath, format, webhookUrl } = jobData;
@@ -34,10 +37,14 @@ export async function processJob(jobData: JobData): Promise<void> {
   let cancelled = false;
   const cancelSignal = { aborted: false };
   const cancelCheck = setInterval(async () => {
-    const s = await getJobStatus(jobId);
-    if (s?.status === 'cancelled') {
-      cancelled = true;
-      cancelSignal.aborted = true;
+    try {
+      const s = await getJobStatus(jobId);
+      if (s?.status === 'cancelled') {
+        cancelled = true;
+        cancelSignal.aborted = true;
+      }
+    } catch (err) {
+      logger.error({ err, jobId }, 'Cancel check failed');
     }
   }, 200);
 
@@ -82,9 +89,11 @@ export async function processJob(jobData: JobData): Promise<void> {
       publisher.publish(STATS_CHANNEL, '1').catch(() => {});
       return;
     }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error({ err: error, jobId, format }, 'Job failed: %s', errorMessage);
     await setJobStatus(jobId, {
       status: 'failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage || 'Unknown error',
     });
     await publisher.publish(PROGRESS_CHANNEL, JSON.stringify({
       jobId, progress: 0, status: 'failed', timestamp: Date.now(),

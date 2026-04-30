@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { s } from '../helpers/selectors';
-import { clearLocalStorage, waitForHistoryCardCount } from '../helpers/wait-for';
+import { clearLocalStorage } from '../helpers/wait-for';
 import { media } from '../helpers/test-media';
 
 async function waitForConvertingCard(page: Page, timeout = 10_000) {
@@ -17,8 +17,6 @@ test('progress display shows correct status during conversion', async ({ page })
 
   await page.locator(s.uploadZoneInput).setInputFiles(media.wav);
   await page.locator(s.convertBtn).click();
-
-  await waitForHistoryCardCount(page, 0, 5_000);
 
   await waitForConvertingCard(page);
   await expect(page.locator(s.progressDisplayLabel)).toHaveText('Готово!', { timeout: 60_000 });

@@ -8,7 +8,7 @@ export const FORMAT_CODECS: Record<string, string[]> = {
   mp3:  ['-codec:a', 'libmp3lame', '-q:a', '2'],
   wav:  ['-codec:a', 'pcm_s16le'],
   flac: ['-codec:a', 'flac'],
-  ogg:  ['-codec:a', 'libvorbis'],
+  ogg:  ['-codec:a', 'libopus', '-b:a', '128k'],
   aac:  ['-codec:a', 'aac', '-f', 'adts'],
   wma:  ['-codec:a', 'wmav2', '-f', 'asf'],
   ac3:  ['-codec:a', 'ac3'],
