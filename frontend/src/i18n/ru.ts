@@ -71,6 +71,8 @@ export default {
     title: 'Очередь',
     subtitle: 'Обработка выполняется асинхронно',
     empty: 'Нет активных задач',
+    cancel: 'Отменить',
+    cancelling: 'Отмена...',
   },
   download: {
     button: 'Скачать',

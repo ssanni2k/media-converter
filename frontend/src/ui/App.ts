@@ -85,7 +85,7 @@ export function mountApp(container: HTMLElement, store: AppStore): () => void {
 
       if (tabId === 'statistics' && !statsLoaded) {
         statsLoaded = true;
-        statsCleanup = mountStatsPage(statsSlot);
+        statsCleanup = mountStatsPage(statsSlot, (jobId: string) => { store.markJobCancelled(jobId); });
       }
     }
   );

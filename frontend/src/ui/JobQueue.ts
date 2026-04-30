@@ -1,6 +1,6 @@
 import '../css/JobQueue.css';
 import { createJobCard, updateJobCard } from './JobCard';
-import { getJobStatus } from '../api/conversionApi';
+import { getJobStatus, cancelJob } from '../api/conversionApi';
 import { t } from '../i18n/index.js';
 import type { JobHistoryItem, JobStatus } from '../types';
 
@@ -12,7 +12,7 @@ interface QueueJob extends Omit<JobHistoryItem, 'error' | 'outputUrl'> {
 
 const POLL_INTERVAL = 2000;
 
-export function mountJobQueue(container: HTMLElement): {
+export function mountJobQueue(container: HTMLElement, onJobCancelled?: (jobId: string) => void): {
   update: (jobs: QueueJob[]) => void;
   destroy: () => void;
 } {
@@ -52,7 +52,9 @@ export function mountJobQueue(container: HTMLElement): {
       emptyMsg.style.display = '';
     }
     card.classList.add('fade-leave');
-    card.addEventListener('animationend', () => card.remove(), { once: true });
+    const removeFromDom = () => { if (card.isConnected) card.remove(); };
+    card.addEventListener('animationend', removeFromDom, { once: true });
+    setTimeout(removeFromDom, 500);
   };
 
   const startPoll = () => {
@@ -84,6 +86,28 @@ export function mountJobQueue(container: HTMLElement): {
     }, POLL_INTERVAL);
   };
 
+  const refreshJob = async (jobId: string) => {
+    try {
+      const status = await getJobStatus(jobId);
+      const card = cardMap.get(jobId);
+      if (!card) return;
+      if (TERMINAL.has(status.status)) {
+        removeCard(jobId);
+      } else {
+        updateJobCard(card, {
+          jobId,
+          fileName: card.querySelector('.job-card__file-name')?.textContent || '',
+          targetFormat: card.querySelector('.job-card__format')?.textContent?.toLowerCase() || '',
+          status: status.status,
+          progress: status.progress,
+          createdAt: parseInt(card.querySelector('.job-card__timestamp')?.dataset.ts || '0') || Date.now(),
+        });
+      }
+    } catch {
+      removeCard(jobId);
+    }
+  };
+
   const render = (jobs: QueueJob[]) => {
     const activeIds = new Set(jobs.map(j => j.jobId));
 
@@ -100,7 +124,11 @@ export function mountJobQueue(container: HTMLElement): {
       if (cardMap.has(job.jobId)) {
         updateJobCard(cardMap.get(job.jobId)!, job);
       } else {
-        const card = createJobCard(job, () => {});
+        const card = createJobCard(job, () => {}, async (jobId: string) => {
+          try { await cancelJob(jobId); } catch { /* job may have already finished */ }
+          await refreshJob(jobId);
+          onJobCancelled?.(jobId);
+        });
         const tsEl = card.querySelector('.job-card__timestamp');
         if (tsEl) tsEl.dataset.ts = String(job.createdAt);
         grid.appendChild(card);

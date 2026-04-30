@@ -11,17 +11,20 @@ const STATUS_ICONS: Record<string, string> = {
   cancelled: '⚠️',
 };
 
-export function createJobCard(job: JobHistoryItem, onRemove: () => void): HTMLElement {
+const CANCELLABLE = new Set<string>(['waiting', 'active']);
+
+export function createJobCard(job: JobHistoryItem, onRemove: () => void, onCancel?: (jobId: string) => Promise<void>): HTMLElement {
   const card = document.createElement('div');
   card.className = `job-card job-card--${job.status}`;
   card.dataset.jobId = job.jobId;
+  const isCancellable = CANCELLABLE.has(job.status) && onCancel;
 
   card.innerHTML = `
     <div class="job-card__header">
       <span class="job-card__status-marker"></span>
       <span class="job-card__icon">${STATUS_ICONS[job.status]}</span>
       <span class="job-card__format">${job.targetFormat.toUpperCase()}</span>
-      <button class="job-card__remove-btn" aria-label="${t('history.remove')}">✕</button>
+      <button class="job-card__remove-btn" aria-label="${isCancellable ? t('queue.cancel') : t('history.remove')}">✕</button>
     </div>
     <div class="job-card__file-name">${escapeHtml(job.fileName)}</div>
     ${job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled' ? `
@@ -31,15 +34,41 @@ export function createJobCard(job: JobHistoryItem, onRemove: () => void): HTMLEl
       </div>
       <span class="job-card__progress-text">${job.progress}%</span>
     </div>` : ''}
+    <div class="job-card__cancel-slot"></div>
     <div class="job-card__download-slot"></div>
     <div class="job-card__error-slot"></div>
     <div class="job-card__timestamp">${new Date(job.createdAt).toLocaleString(getLocale() === 'ru' ? 'ru-RU' : 'en-US')}</div>
   `;
 
-  card.querySelector('.job-card__remove-btn')!.addEventListener('click', onRemove);
-
+  const removeBtn = card.querySelector('.job-card__remove-btn') as HTMLButtonElement;
+  const cancelSlot = card.querySelector('.job-card__cancel-slot') as HTMLElement;
   const downloadSlot = card.querySelector('.job-card__download-slot') as HTMLElement;
   const errorSlot = card.querySelector('.job-card__error-slot') as HTMLElement;
+
+  if (isCancellable && onCancel) {
+    const handleCancel = async () => {
+      const cancelBtn = cancelSlot.querySelector('.job-card__cancel-btn') as HTMLButtonElement | null;
+      if (cancelBtn) {
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = t('queue.cancelling');
+        cancelBtn.classList.add('job-card__cancel-btn--loading');
+      }
+      removeBtn.disabled = true;
+      try {
+        await onCancel(job.jobId);
+      } catch { /* refreshJob handles revealing final state */ }
+    };
+
+    removeBtn.addEventListener('click', handleCancel);
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'job-card__cancel-btn';
+    cancelBtn.textContent = t('queue.cancel');
+    cancelBtn.addEventListener('click', handleCancel);
+    cancelSlot.appendChild(cancelBtn);
+  } else {
+    removeBtn.addEventListener('click', onRemove);
+  }
 
   if (job.status === 'completed' && job.outputUrl) {
     downloadSlot.appendChild(createDownloadButton(job.outputUrl, `${job.jobId}.${job.targetFormat}`));
@@ -74,6 +103,11 @@ export function updateJobCard(element: HTMLElement, job: JobHistoryItem): void {
       fill.style.width = `${job.progress}%`;
       progressText.textContent = `${job.progress}%`;
     }
+  }
+
+  const cancelSlot = element.querySelector('.job-card__cancel-slot') as HTMLElement;
+  if (!CANCELLABLE.has(job.status)) {
+    cancelSlot.innerHTML = '';
   }
 
   downloadSlot.innerHTML = '';

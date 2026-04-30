@@ -244,6 +244,15 @@ export class AppStore {
     this.handleCancel();
   }
 
+  markJobCancelled(jobId: string): void {
+    this.jobHistory.updateJob(jobId, { status: 'cancelled', error: t('errors.cancelledByUser') });
+    this.emitHistoryImmediate();
+
+    if (this.currentJob && this.currentJob.jobId === jobId && !this.isTerminal()) {
+      this.handleCancel();
+    }
+  }
+
   private async fetchQueueInfo(): Promise<void> {
     if (this.isTerminal() || this.conversion.status !== 'waiting') return;
     try {

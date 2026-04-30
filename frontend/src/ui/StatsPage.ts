@@ -21,7 +21,7 @@ function statusClass(status: string): string {
   return `stats-status stats-status--${status}`;
 }
 
-export function mountStatsPage(container: HTMLElement): () => void {
+export function mountStatsPage(container: HTMLElement, onJobCancelled?: (jobId: string) => void): () => void {
   container.innerHTML = `
     <div class="stats-page">
       <div class="stats-cards">
@@ -81,7 +81,7 @@ export function mountStatsPage(container: HTMLElement): () => void {
     </div>
   `;
 
-  const queue = mountJobQueue(container.querySelector('.stats-queue-slot') as HTMLElement);
+  const queue = mountJobQueue(container.querySelector('.stats-queue-slot') as HTMLElement, onJobCancelled);
 
   let formatChart: any = null;
   let statusChart: any = null;

@@ -70,6 +70,8 @@ export default {
     title: 'Queue',
     subtitle: 'Processing is asynchronous',
     empty: 'No active jobs',
+    cancel: 'Cancel',
+    cancelling: 'Cancelling...',
   },
   download: {
     button: 'Download',

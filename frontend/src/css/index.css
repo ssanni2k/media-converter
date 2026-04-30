@@ -122,5 +122,7 @@ body {
 
 /* === FADE UTILITY === */
 .fade-leave {
-  animation: fadeOut var(--transition-normal) ease forwards;
+  animation-name: fadeOut;
+  animation-duration: 300ms;
+  animation-fill-mode: forwards;
 }

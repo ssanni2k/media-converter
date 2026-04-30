@@ -160,3 +160,32 @@
   color: var(--text-muted);
   margin-top: var(--spacing-md);
 }
+
+.job-card__cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid rgba(254, 202, 87, 0.3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: var(--spacing-md);
+}
+
+.job-card__cancel-btn:hover {
+  color: var(--accent-warning);
+  border-color: var(--accent-warning);
+  box-shadow: 0 0 10px rgba(254, 202, 87, 0.3);
+}
+
+.job-card__cancel-btn:disabled,
+.job-card__cancel-btn--loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
